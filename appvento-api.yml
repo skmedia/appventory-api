@@ -1,0 +1,25 @@
+envs:
+- key: DATABASE_URL
+  scope: RUN_AND_BUILD_TIME
+  value: mysql://appvento:ebQCB0xQac76Rh20@db-mysql-ams3-82846-do-user-10575496-0.b.db.ondigitalocean.com:25060/defaultdb?ssl-mode=REQUIRED
+name: appvento-api
+region: ams
+services:
+- build_command: npm run build
+  environment_slug: node-js
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    value: ${DATABASE_URL}
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: skmedia/appvento-api
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: basic-xs
+  name: appvento-api
+  routes:
+  - path: /api
+  run_command: npm start
+  source_dir: /

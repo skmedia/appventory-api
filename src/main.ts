@@ -9,9 +9,7 @@ async function bootstrap() {
     key: fs.readFileSync('./keys/server.key'),
     cert: fs.readFileSync('./keys/server.crt'),
   };
-  const app = await NestFactory.create(AppModule, {
-    httpsOptions,
-  });
+  const app = await NestFactory.create(AppModule, {});
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

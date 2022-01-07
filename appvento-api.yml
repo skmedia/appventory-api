@@ -7,10 +7,6 @@ region: ams
 services:
 - build_command: npm run build
   environment_slug: node-js
-  envs:
-  - key: DATABASE_URL
-    scope: RUN_AND_BUILD_TIME
-    value: ${DATABASE_URL}
   github:
     branch: main
     deploy_on_push: true

@@ -37,3 +37,4 @@ lerna-debug.log*
 # App specific
 uploads
 .env
+appvento-api.yml

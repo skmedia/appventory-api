@@ -227,14 +227,10 @@ export class ApplicationsService {
       };
     });
 
-    const filesToDelete = application.assets
-      .filter((asset) => {
-        const found = input.assets.find(({ id }) => id === asset.id);
-        return !!found === false; // existing asset is no longer in input assets, so remove it
-      })
-      .map((asset) => {
-        return asset.id;
-      });
+    const filesToDelete = application.assets.filter((asset) => {
+      const found = input.assets.find(({ id }) => id === asset.id);
+      return !!found === false; // existing asset is no longer in input assets, so remove it
+    });
 
     const newAssets = input.filesToAdd.map((a) => {
       return {
@@ -258,8 +254,8 @@ export class ApplicationsService {
       },
       description: input.description,
       assets: {
-        deleteMany: filesToDelete.map((fileId) => {
-          return { id: fileId };
+        deleteMany: filesToDelete.map((file) => {
+          return { id: file.id };
         }),
         updateMany: input.assets.map((file) => {
           return {
@@ -306,7 +302,10 @@ export class ApplicationsService {
       });
 
       if (filesToDelete.length) {
-        await this.assetsService.removeMultiple(filesToDelete);
+        await this.assetsService.deleteFilesInFolder(
+          application.id,
+          filesToDelete.map((file) => file.filename),
+        );
       }
       await this.assetsService.moveFiles(
         application.id,

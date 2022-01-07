@@ -140,10 +140,15 @@ export class TagTypesService {
       return;
     }
 
-    return this.prisma.tagType.delete({
-      where: {
-        id: id,
-      },
-    });
+    return await this.prisma.$transaction([
+      this.prisma.tag.deleteMany({
+        where: { tagTypeId: id },
+      }),
+      this.prisma.tagType.delete({
+        where: {
+          id: id,
+        },
+      }),
+    ]);
   }
 }

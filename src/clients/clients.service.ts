@@ -52,6 +52,9 @@ export class ClientsService {
       skip: dataTableOptions.skip(),
       take: dataTableOptions.take(),
       where: where,
+      include: {
+        applications: true,
+      },
     });
   }
 

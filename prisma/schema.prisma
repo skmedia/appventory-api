@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id        String  @unique(map: "id") @db.VarChar(255)
+  id        String  @id @db.VarChar(255)
   email     String  @unique
   firstName String? @map("first_name")
   lastName  String? @map("last_name")
@@ -21,7 +21,7 @@ model User {
 }
 
 model Client {
-  id   String @unique(map: "id") @db.VarChar(255)
+  id   String @id @db.VarChar(255)
   name String @unique @db.VarChar(255)
 
   applications Application[]
@@ -30,7 +30,7 @@ model Client {
 }
 
 model ApiClients {
-  id     String  @unique(map: "id") @db.VarChar(255)
+  id     String  @id @db.VarChar(255)
   name   String? @db.VarChar(255)
   apiKey String? @map("api_key") @db.VarChar(255)
 
@@ -38,7 +38,7 @@ model ApiClients {
 }
 
 model Application {
-  id          String  @unique(map: "id") @db.VarChar(255)
+  id          String  @id @db.VarChar(255)
   name        String
   description String? @db.LongText
   client      Client  @relation(fields: [clientId], references: [id])
@@ -55,7 +55,7 @@ model Application {
 }
 
 model ApplicationNote {
-  id   String @unique(map: "id") @db.VarChar(255)
+  id   String @id @db.VarChar(255)
   text String @db.LongText
 
   Application   Application? @relation(fields: [applicationId], references: [id])
@@ -65,7 +65,7 @@ model ApplicationNote {
 }
 
 model ApplicationLink {
-  id   String @unique(map: "id") @db.VarChar(255)
+  id   String @id @db.VarChar(255)
   type String @db.VarChar(255)
   url  String @db.VarChar(255)
 
@@ -79,7 +79,7 @@ model ApplicationLink {
 }
 
 model ApplicationTag {
-  id    String @unique(map: "id") @db.VarChar(255)
+  id    String @id @db.VarChar(255)
   value String
 
   Tag   Tag?    @relation(fields: [tagId], references: [id])
@@ -93,7 +93,7 @@ model ApplicationTag {
 }
 
 model ApplicationTeamMember {
-  id            String       @unique(map: "id") @db.VarChar(255)
+  id            String       @id @db.VarChar(255)
   userFullName  String       @map("user_full_name") @db.VarChar(255)
   User          User         @relation(fields: [userId], references: [id])
   userId        String       @map("user_id")
@@ -107,7 +107,7 @@ model ApplicationTeamMember {
 
 // uploads: images, PDF files
 model ApplicationAsset {
-  id            String       @unique(map: "id") @db.VarChar(255)
+  id            String       @id @db.VarChar(255)
   type          String       @db.VarChar(255)
   filename      String       @db.VarChar(255)
   description   String?
@@ -118,7 +118,7 @@ model ApplicationAsset {
 }
 
 model Assets {
-  id          String  @unique(map: "id") @db.VarChar(255)
+  id          String  @id @db.VarChar(255)
   type        String  @db.VarChar(255)
   path        String  @db.VarChar(255)
   description String?
@@ -127,7 +127,7 @@ model Assets {
 }
 
 model ApplicationType {
-  id          String  @unique(map: "id") @db.VarChar(255)
+  id          String  @id @db.VarChar(255)
   name        String
   description String?
 
@@ -135,7 +135,7 @@ model ApplicationType {
 }
 
 model TagGroup {
-  id       String    @unique(map: "id") @db.VarChar(255)
+  id       String    @id @db.VarChar(255)
   name     String
   tagTypes TagType[]
 
@@ -144,7 +144,7 @@ model TagGroup {
 }
 
 model TagType {
-  id   String @unique(map: "id") @db.VarChar(255)
+  id   String @id @db.VarChar(255)
   name String
   tags Tag[]
 
@@ -156,7 +156,7 @@ model TagType {
 }
 
 model Tag {
-  id                    String                  @unique(map: "id") @db.VarChar(255)
+  id                    String                  @id @db.VarChar(255)
   name                  String
   TagType               TagType?                @relation(fields: [tagTypeId], references: [id])
   tagTypeId             String?                 @map("tag_type_id") @db.VarChar(255)

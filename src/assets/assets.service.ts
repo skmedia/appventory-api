@@ -23,7 +23,7 @@ export class AssetsService {
     const fileList = [];
     let i = 0;
     files.forEach(async (f) => {
-      const filename = slugify(f.originalname);
+      const filename = slugify(f.originalname, { lower: true });
       const filePath = applicationAssetsDir + '/' + filename;
       fs.writeFileSync(filePath, f.buffer);
       fileList.push({

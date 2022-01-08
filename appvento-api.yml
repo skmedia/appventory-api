@@ -1,7 +1,8 @@
 envs:
 - key: DATABASE_URL
   scope: RUN_AND_BUILD_TIME
-  value: mysql://appvento:ebQCB0xQac76Rh20@db-mysql-ams3-82846-do-user-10575496-0.b.db.ondigitalocean.com:25060/defaultdb?ssl-mode=REQUIRED
+  type: SECRET
+  value: EV[1:WHnB6WMY8ZaHk9okCfuym7mAW0hyxEQA:XqsxCKvDkaL6Uck5tqgrla1tAa6PiAYREvPHUMQ6zv8iYgFU0x19af4vjfSCXdDnpki0niKW5YbJdMFw/P+O/R67p254R3MmCTPKAIJDzllKdgxm6ZtBpnNMKysRN+xcGiBZ/k4gU0RBQdLdbpN1tDScs0m6hhBeVNqK/5NgzsTWLWERaxEXIn7PImqeTDT7h3o=]
 name: appvento-api
 region: ams
 services:
@@ -17,5 +18,5 @@ services:
   name: appvento-api
   routes:
   - path: /api
-  run_command: npm start
+  run_command: npm run start:prod
   source_dir: /

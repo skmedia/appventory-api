@@ -30,19 +30,19 @@ export class ApplicationsService {
         client: true,
         tags: {
           include: {
-            Tag: true,
+            tag: true,
           },
         },
         notes: true,
         assets: true,
         links: {
           include: {
-            Tag: true,
+            tag: true,
           },
         },
         teamMembers: {
           include: {
-            Tag: true,
+            tag: true,
           },
         },
       },
@@ -51,31 +51,36 @@ export class ApplicationsService {
 
   private buildWhere(
     dataTableOptions: DataTableOptionsDto,
+    account: string,
   ): Prisma.ApplicationWhereInput {
     let where: Prisma.ApplicationWhereInput = undefined;
+    where = {
+      accountId: account,
+    };
     if (dataTableOptions.term()) {
-      where = {
-        OR: [
-          {
+      where.OR = [
+        {
+          name: {
+            contains: dataTableOptions.term(),
+          },
+        },
+        {
+          client: {
             name: {
               contains: dataTableOptions.term(),
             },
           },
-          {
-            client: {
-              name: {
-                contains: dataTableOptions.term(),
-              },
-            },
-          },
-        ],
-      };
+        },
+      ];
     }
     return where;
   }
 
-  async getList(dataTableOptions: DataTableOptionsDto): Promise<any[]> {
-    const where = this.buildWhere(dataTableOptions);
+  async getList(
+    dataTableOptions: DataTableOptionsDto,
+    account: string,
+  ): Promise<any[]> {
+    const where = this.buildWhere(dataTableOptions, account);
 
     return this.prisma.application.findMany({
       orderBy: { name: 'asc' },
@@ -88,8 +93,11 @@ export class ApplicationsService {
     });
   }
 
-  async count(dataTableOptions: DataTableOptionsDto): Promise<number> {
-    const where = this.buildWhere(dataTableOptions);
+  async count(
+    dataTableOptions: DataTableOptionsDto,
+    account: string,
+  ): Promise<number> {
+    const where = this.buildWhere(dataTableOptions, account);
     return this.prisma.application
       .findMany({
         where: where,
@@ -97,9 +105,17 @@ export class ApplicationsService {
       .then((result) => result.length);
   }
 
-  async createApplication(data: AddApplicationDto): Promise<Application> {
+  async createApplication(
+    data: AddApplicationDto,
+    account: string,
+  ): Promise<Application> {
     const application: Prisma.ApplicationCreateInput = {
       id: uuidv4(),
+      account: {
+        connect: {
+          id: account,
+        },
+      },
       client: {
         connect: {
           id: data.client.id,
@@ -112,7 +128,7 @@ export class ApplicationsService {
       return {
         id: uuidv4(),
         tagId: t.id,
-        value: t.name,
+        label: t.label,
       };
     });
     const newLinks = data.links.map((t) => {
@@ -195,7 +211,7 @@ export class ApplicationsService {
         return {
           id: uuidv4(),
           tagId: t.id,
-          value: t.name,
+          label: t.label,
         };
       });
 

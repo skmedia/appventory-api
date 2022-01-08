@@ -2,9 +2,11 @@ import {
   Controller,
   Get,
   HttpException,
+  Headers,
   HttpStatus,
   Param,
 } from '@nestjs/common';
+import { CurrentAccount } from 'src/auth/auth.decorator';
 import { TagGroupsService } from './tag-groups.service';
 
 @Controller({
@@ -15,9 +17,9 @@ export class TagGroupsController {
   constructor(private readonly tagGroupsService: TagGroupsService) {}
 
   @Get('/:id')
-  async getTagType(@Param('id') id: string) {
+  async getTagType(@Param('id') id: string, @CurrentAccount() accountId) {
     const tagGroup = await this.tagGroupsService.findById(id);
-    if (!tagGroup) {
+    if (!tagGroup || tagGroup.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -31,7 +33,7 @@ export class TagGroupsController {
   }
 
   @Get()
-  getList() {
-    return this.tagGroupsService.getList();
+  getList(@CurrentAccount() accountId) {
+    return this.tagGroupsService.getList(accountId);
   }
 }

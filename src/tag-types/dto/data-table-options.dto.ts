@@ -5,7 +5,7 @@ class TagFilterDto {
   @IsString()
   @IsOptional()
   @Type(() => String)
-  name: string;
+  label: string;
 
   @IsString()
   @IsOptional()

@@ -10,6 +10,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { CurrentAccount } from 'src/auth/auth.decorator';
 import AddTagDto from './dto/add-tag.dto';
 import DataTableOptionsDto from './dto/data-table-options.dto';
 import UpdateTagDto from './dto/update-tag-dto';
@@ -37,23 +38,29 @@ export class TagsController {
     return tag;
   }
   @Get('for-select/:tagGroupId')
-  async forSelect(@Param('tagGroupId') tagGroupId: string) {
-    const items = await this.tagsService.forSelect(tagGroupId);
+  async forSelect(
+    @CurrentAccount() accountId,
+    @Param('tagGroupId') tagGroupCode?: string,
+  ) {
+    const items = await this.tagsService.forSelect(accountId, tagGroupCode);
     return {
       items: items,
     };
   }
   @Get()
-  async getList(@Query() dataTableOptions: DataTableOptionsDto) {
-    const count = await this.tagsService.count(dataTableOptions);
-    const items = await this.tagsService.getList(dataTableOptions);
+  async getList(
+    @Query() dataTableOptions: DataTableOptionsDto,
+    @CurrentAccount() accountId,
+  ) {
+    const count = await this.tagsService.count(dataTableOptions, accountId);
+    const items = await this.tagsService.getList(dataTableOptions, accountId);
     return {
       items: items.map((i) => ({
         ...i,
         hasLinkedItems: !!(
-          i.ApplicationLink.length ||
-          i.ApplicationTeamMember.length ||
-          i.ApplicationTag.length
+          i.applicationLinks.length ||
+          i.applicationTeamMembers.length ||
+          i.applicationTags.length
         ),
       })),
       meta: {
@@ -62,11 +69,17 @@ export class TagsController {
     };
   }
   @Post()
-  async addTag(@Body() addTagDto: AddTagDto) {
+  async addTag(@Body() addTagDto: AddTagDto, @CurrentAccount() accountId) {
+    // todo check accountId!
     return await this.tagsService.createTag(addTagDto);
   }
   @Put(':id')
-  async updateTag(@Body() updateTagDto: UpdateTagDto, @Param('id') id: string) {
+  async updateTag(
+    @Body() updateTagDto: UpdateTagDto,
+    @Param('id') id: string,
+    @CurrentAccount() accountId,
+  ) {
+    // todo check accountId!
     const tag = await this.tagsService.findById(id);
     if (!tag) {
       throw new HttpException(
@@ -80,9 +93,9 @@ export class TagsController {
     return await this.tagsService.updateTag(id, updateTagDto);
   }
   @Delete(':id')
-  async deleteTag(@Param('id') id: string) {
+  async deleteTag(@Param('id') id: string, @CurrentAccount() accountId) {
     const tag = await this.tagsService.findById(id);
-    if (!tag) {
+    if (!tag || tag.tagType.tagGroup.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

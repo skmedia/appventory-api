@@ -7,12 +7,12 @@ export class AddTagDto {
   id: string;
 
   @IsNotEmpty({ message: 'name is required' })
-  name: string;
+  label: string;
 
   @IsNotEmpty({ message: 'tag type is required' })
   @Type(() => TypeTagInput)
   @ValidateNested()
-  TagType: TypeTagInput;
+  tagType: TypeTagInput;
 }
 
 export default AddTagDto;

@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { CurrentAccount } from 'src/auth/auth.decorator';
 import {
   AddUserDto,
   UpdateUserDto,
@@ -32,9 +33,12 @@ export class UsersController {
     };
   }
   @Get('list')
-  async getList(@Query() dataTableOptions: DataTableOptionsDto) {
-    const count = await this.usersService.count(dataTableOptions);
-    const items = await this.usersService.getList(dataTableOptions);
+  async getList(
+    @Query() dataTableOptions: DataTableOptionsDto,
+    @CurrentAccount() accountId,
+  ) {
+    const count = await this.usersService.count(dataTableOptions, accountId);
+    const items = await this.usersService.getList(dataTableOptions, accountId);
     return {
       items: items,
       meta: {
@@ -58,16 +62,20 @@ export class UsersController {
     return user;
   }
   @Post('')
-  async addUser(@Body() data: AddUserDto): Promise<User> {
-    return this.usersService.createUser(data);
+  async addUser(
+    @Body() data: AddUserDto,
+    @CurrentAccount() accountId,
+  ): Promise<User> {
+    return this.usersService.createUser(data, accountId);
   }
   @Put('/:id')
   async updateUser(
     @Param('id') id: string,
     @Body() data: UpdateUserDto,
+    @CurrentAccount() accountId,
   ): Promise<User> {
     const user = await this.usersService.findById(id);
-    if (!user) {
+    if (!user || user.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -80,9 +88,12 @@ export class UsersController {
     return this.usersService.updateUser(user, data);
   }
   @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<User> {
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentAccount() accountId,
+  ): Promise<User> {
     const user = await this.usersService.findById(id);
-    if (!user) {
+    if (!user || user.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

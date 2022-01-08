@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpException,
   HttpStatus,
   Param,
@@ -17,6 +18,7 @@ import {
   DataTableOptionsDto,
 } from './dto/index.dto';
 import { ClientsService } from './clients.service';
+import { CurrentAccount } from 'src/auth/auth.decorator';
 
 @Controller({
   path: 'clients',
@@ -25,16 +27,22 @@ import { ClientsService } from './clients.service';
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
   @Get('for-select')
-  async forSelect() {
-    const items = await this.clientsService.forSelect();
+  async forSelect(@CurrentAccount() accountId) {
+    const items = await this.clientsService.forSelect(accountId);
     return {
       items: items,
     };
   }
   @Get('list')
-  async getList(@Query() dataTableOptions: DataTableOptionsDto) {
-    const count = await this.clientsService.count(dataTableOptions);
-    const items = await this.clientsService.getList(dataTableOptions);
+  async getList(
+    @Query() dataTableOptions: DataTableOptionsDto,
+    @CurrentAccount() accountId,
+  ) {
+    const count = await this.clientsService.count(dataTableOptions, accountId);
+    const items = await this.clientsService.getList(
+      dataTableOptions,
+      accountId,
+    );
     return {
       items: items,
       meta: {
@@ -43,9 +51,9 @@ export class ClientsController {
     };
   }
   @Get('/:id')
-  async getClient(@Param('id') id: string) {
+  async getClient(@Param('id') id: string, @CurrentAccount() accountId) {
     const client = await this.clientsService.findById(id);
-    if (!client) {
+    if (!client || client.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -58,16 +66,20 @@ export class ClientsController {
     return client;
   }
   @Post('')
-  async addClient(@Body() data: AddClientDto): Promise<Client> {
-    return this.clientsService.createClient(data);
+  async addClient(
+    @Body() data: AddClientDto,
+    @Headers('account') account: string,
+  ): Promise<Client> {
+    return this.clientsService.createClient(data, account);
   }
   @Put('/:id')
   async updateClient(
     @Param('id') id: string,
     @Body() data: UpdateClientDto,
+    @CurrentAccount() accountId,
   ): Promise<Client> {
     const client = await this.clientsService.findById(id);
-    if (!client) {
+    if (!client || client.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -80,9 +92,12 @@ export class ClientsController {
     return this.clientsService.updateClient(client, data);
   }
   @Delete(':id')
-  async deleteClient(@Param('id') id: string): Promise<Client> {
+  async deleteClient(
+    @Param('id') id: string,
+    @CurrentAccount() accountId,
+  ): Promise<Client> {
     const client = await this.clientsService.findById(id);
-    if (!client) {
+    if (!client || client.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

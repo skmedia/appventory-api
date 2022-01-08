@@ -2,7 +2,7 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 
 interface TagInput {
   id: string;
-  name: string;
+  label: string;
 }
 
 export class UpdateApplicationDto {

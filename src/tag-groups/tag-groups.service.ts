@@ -14,10 +14,13 @@ export class TagGroupsService {
     });
   }
 
-  public getList() {
+  public getList(account: string) {
     return this.prisma.tagGroup.findMany({
+      where: {
+        accountId: account,
+      },
       orderBy: {
-        name: 'asc',
+        label: 'asc',
       },
     });
   }

@@ -5,11 +5,15 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 
 async function bootstrap() {
-  const httpsOptions = {
+  let httpsOptions = {
     key: fs.readFileSync('./keys/server.key'),
     cert: fs.readFileSync('./keys/server.crt'),
   };
-  const app = await NestFactory.create(AppModule, {});
+  httpsOptions = process.env.PORT !== '3000' ? null : httpsOptions;
+  console.log(httpsOptions);
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

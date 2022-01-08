@@ -8,6 +8,9 @@ import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { TagTypesModule } from './tag-types/tag-types.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -19,8 +22,14 @@ import { TagTypesModule } from './tag-types/tag-types.module';
     AssetsModule,
     TagGroupsModule,
     TagTypesModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, TagType } from '@prisma/client';
+import { Prisma, TagGroup, TagType } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { TagsService } from 'src/tags/tags.service';
 import AddTagTypeDto from './dto/add-tag-type.dto';
 import DataTableOptionsDto from './dto/data-table-options.dto';
 import UpdateTagTypeDto from './dto/update-tag-type-dto';
+import slugify from 'slugify';
 
 @Injectable()
 export class TagTypesService {
@@ -13,13 +14,13 @@ export class TagTypesService {
     private tagsService: TagsService,
   ) {}
 
-  async findById(id: string): Promise<TagType> {
+  async findById(id: string): Promise<TagType & { tagGroup: TagGroup }> {
     return this.prisma.tagType.findUnique({
       where: {
         id: id,
       },
       include: {
-        TagGroup: true,
+        tagGroup: true,
       },
     });
   }
@@ -27,20 +28,20 @@ export class TagTypesService {
   async forSelect(tagGroupId: string): Promise<TagType[]> {
     return this.prisma.tagType.findMany({
       orderBy: {
-        name: 'asc',
+        label: 'asc',
       },
       where: {
-        TagGroup: {
+        tagGroup: {
           id: tagGroupId,
         },
       },
       include: {
-        TagGroup: true,
+        tagGroup: true,
         tags: {
           include: {
-            ApplicationLink: true,
-            ApplicationTag: true,
-            ApplicationTeamMember: true,
+            applicationLinks: true,
+            applicationTags: true,
+            applicationTeamMembers: true,
           },
         },
       },
@@ -52,20 +53,20 @@ export class TagTypesService {
     let where: Prisma.TagTypeWhereInput = undefined;
     if (dataTableOptions.term()) {
       where = {
-        name: {
+        label: {
           contains: dataTableOptions.term(),
         },
       };
     }
     if (dataTableOptions.filter) {
       where = {};
-      if (dataTableOptions.filter?.name) {
-        where.name = {
-          contains: dataTableOptions.filter.name,
+      if (dataTableOptions.filter?.label) {
+        where.label = {
+          contains: dataTableOptions.filter.label,
         };
       }
       if (dataTableOptions.filter?.tagGroup) {
-        where.TagGroup = {
+        where.tagGroup = {
           id: {
             contains: dataTableOptions.filter.tagGroup,
           },
@@ -87,11 +88,11 @@ export class TagTypesService {
     const where = this.buildWhere(dataTableOptions);
 
     return this.prisma.tagType.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { label: 'asc' },
       skip: dataTableOptions.skip(),
       take: dataTableOptions.take(),
       include: {
-        TagGroup: true,
+        tagGroup: true,
       },
       where: where,
     });
@@ -101,7 +102,8 @@ export class TagTypesService {
     return this.prisma.tagType.create({
       data: {
         id: addTagTypeDto.id,
-        name: addTagTypeDto.name,
+        label: addTagTypeDto.label,
+        code: slugify(addTagTypeDto.label, { lower: true }),
         tagGroupId: addTagTypeDto.tagGroupId,
       },
     });
@@ -113,7 +115,7 @@ export class TagTypesService {
         id: id,
       },
       data: {
-        name: updateTagTypeDto.name,
+        label: updateTagTypeDto.label,
       },
     });
   }
@@ -121,7 +123,7 @@ export class TagTypesService {
   async removeTagType(id: string) {
     const tags = await this.prisma.tag.findMany({
       where: {
-        TagType: {
+        tagType: {
           id: id,
         },
       },

@@ -24,10 +24,22 @@ export class UsersService {
     });
   }
 
+  async findByEmail(email: string): Promise<User> {
+    return this.prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+  }
+
   private buildWhere(
     dataTableOptions: DataTableOptionsDto,
+    accountId: string,
   ): Prisma.UserWhereInput {
     let where: Prisma.UserWhereInput = undefined;
+    where = {
+      accountId: accountId,
+    };
     if (dataTableOptions.term()) {
       where = {
         OR: [
@@ -47,8 +59,11 @@ export class UsersService {
     return where;
   }
 
-  async getList(dataTableOptions: DataTableOptionsDto): Promise<any[]> {
-    const where = this.buildWhere(dataTableOptions);
+  async getList(
+    dataTableOptions: DataTableOptionsDto,
+    accountId: string,
+  ): Promise<any[]> {
+    const where = this.buildWhere(dataTableOptions, accountId);
 
     return this.prisma.user.findMany({
       orderBy: { firstName: 'asc' },
@@ -58,8 +73,11 @@ export class UsersService {
     });
   }
 
-  async count(dataTableOptions: DataTableOptionsDto): Promise<number> {
-    const where = this.buildWhere(dataTableOptions);
+  async count(
+    dataTableOptions: DataTableOptionsDto,
+    accountId: string,
+  ): Promise<number> {
+    const where = this.buildWhere(dataTableOptions, accountId);
     return this.prisma.user
       .findMany({
         where: where,
@@ -67,12 +85,19 @@ export class UsersService {
       .then((result) => result.length);
   }
 
-  async createUser(input: AddUserDto): Promise<User> {
+  async createUser(input: AddUserDto, accountId: string): Promise<User> {
     const data: Prisma.UserCreateInput = {
       id: uuidv4(),
+      account: {
+        connect: {
+          id: accountId,
+        },
+      },
+      role: input.role,
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email,
+      password: input.password,
     };
     return this.prisma.user.create({
       data: data,
@@ -83,6 +108,7 @@ export class UsersService {
     const data = {
       firstName: input.firstName,
       lastName: input.lastName,
+      role: input.role,
       email: input.email,
     };
     const where = {

@@ -5,7 +5,7 @@ export class AddTagTypeDto {
   id: string;
 
   @IsNotEmpty({ message: 'name is required' })
-  name: string;
+  label: string;
 
   @IsNotEmpty({ message: 'tag group is required' })
   tagGroupId: string;

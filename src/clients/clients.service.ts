@@ -11,8 +11,11 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
-  async forSelect(): Promise<Client[]> {
+  async forSelect(accountId: string): Promise<Client[]> {
     return this.prisma.client.findMany({
+      where: {
+        accountId: accountId,
+      },
       orderBy: {
         name: 'asc',
       },
@@ -28,24 +31,29 @@ export class ClientsService {
 
   private buildWhere(
     dataTableOptions: DataTableOptionsDto,
+    account: string,
   ): Prisma.ClientWhereInput {
     let where: Prisma.ClientWhereInput = undefined;
+    where = {
+      accountId: account,
+    };
     if (dataTableOptions.term()) {
-      where = {
-        OR: [
-          {
-            name: {
-              contains: dataTableOptions.term(),
-            },
+      where.OR = [
+        {
+          name: {
+            contains: dataTableOptions.term(),
           },
-        ],
-      };
+        },
+      ];
     }
     return where;
   }
 
-  async getList(dataTableOptions: DataTableOptionsDto): Promise<any[]> {
-    const where = this.buildWhere(dataTableOptions);
+  async getList(
+    dataTableOptions: DataTableOptionsDto,
+    accountId: string,
+  ): Promise<any[]> {
+    const where = this.buildWhere(dataTableOptions, accountId);
 
     return this.prisma.client.findMany({
       orderBy: { name: 'asc' },
@@ -58,8 +66,11 @@ export class ClientsService {
     });
   }
 
-  async count(dataTableOptions: DataTableOptionsDto): Promise<number> {
-    const where = this.buildWhere(dataTableOptions);
+  async count(
+    dataTableOptions: DataTableOptionsDto,
+    accountId: string,
+  ): Promise<number> {
+    const where = this.buildWhere(dataTableOptions, accountId);
     return this.prisma.client
       .findMany({
         where: where,
@@ -67,9 +78,14 @@ export class ClientsService {
       .then((result) => result.length);
   }
 
-  async createClient(input: AddClientDto): Promise<Client> {
+  async createClient(input: AddClientDto, accountId: string): Promise<Client> {
     const data: Prisma.ClientCreateInput = {
       id: uuidv4(),
+      account: {
+        connect: {
+          id: accountId,
+        },
+      },
       name: input.name,
     };
     return this.prisma.client.create({

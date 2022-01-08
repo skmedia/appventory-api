@@ -1,43 +1,60 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { v4 as uuidv4 } from 'uuid';
+import slugify from 'slugify';
+import { cloneDeep } from 'lodash';
+import { hash } from 'bcrypt';
 
 async function main() {
+  await seedAccounts();
   await seedClients();
   await seedUsers();
   await seedTags();
   await seedApplications();
 }
 
+const accountRefs = {};
 const tagRefs = {};
 const userRefs = {};
 const clientRefs = {};
 
+async function seedAccounts() {
+  const accounts = [
+    {
+      id: 'account_1',
+      name: 'Account 1',
+    },
+    {
+      id: 'account_2',
+      name: 'Account 2',
+    },
+  ];
+
+  accounts.forEach(async (c) => {
+    accountRefs[c.id] = c;
+  });
+
+  return await prisma.account.createMany({
+    data: accounts,
+  });
+}
+
 async function seedClients() {
   const clients = [
     {
-      id: 'clp',
-      name: 'Colruyt CLP',
+      id: 'client_1',
+      accountId: 'account_1',
+      name: 'Client 1',
     },
     {
-      id: 'rpcg',
-      name: 'Retail Partners Colruyt Group',
+      id: 'client_2',
+      accountId: 'account_1',
+      name: 'Client 2',
     },
     {
-      id: 'kul',
-      name: 'KU Leuven',
-    },
-    {
-      id: 'so',
-      name: 'Stedelijk Onderwijs',
-    },
-    {
-      id: 'irisnet',
-      name: 'IRISnet',
-    },
-    {
-      id: 'earli',
-      name: 'Earli',
+      id: 'client_3',
+      accountId: 'account_2',
+      name: 'Client 3',
     },
   ];
 
@@ -51,176 +68,154 @@ async function seedClients() {
 }
 
 async function seedUsers() {
-  const users = [
+  const users: any = [
     {
       id: uuidv4(),
-      firstName: 'Kris',
-      lastName: 'Geens',
-      email: 'kris.geens@ausy.be',
+      accountId: accountRefs['account_1'].id,
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john.doe@example.com',
+      role: 'admin',
     },
     {
       id: uuidv4(),
-      firstName: 'Vincent',
-      lastName: 'Verhasselt',
-      email: 'vincent.verhasselt@ausy.be',
+      accountId: accountRefs['account_1'].id,
+      firstName: 'Bob',
+      lastName: 'Doe',
+      email: 'bob.doe@example.com',
+      role: 'user',
     },
     {
       id: uuidv4(),
-      firstName: 'Julie',
-      lastName: 'Deneft',
-      email: 'Julie.Deneft@ausy.be',
+      accountId: accountRefs['account_2'].id,
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane.doe@example.com',
+      role: 'admin',
     },
     {
       id: uuidv4(),
-      firstName: 'Veronique',
-      lastName: 'Van Vlierberge',
-      email: 'Veronique.Vanvlierberge@ausy.be',
-    },
-    {
-      id: uuidv4(),
-      firstName: 'Wouter',
-      lastName: 'Cypers',
-      email: 'Wouter.Cypers@ausy.be',
-    },
-    {
-      id: uuidv4(),
-      firstName: 'Nelis',
-      lastName: 'De Kerpel',
-      email: 'Nelis.Dekerpel@ausy.be',
+      accountId: accountRefs['account_2'].id,
+      firstName: 'Mike',
+      lastName: 'Doe',
+      email: 'mike.doe@example.com',
+      role: 'user',
     },
   ];
 
-  users.forEach(async (u) => {
+  for (const u of users) {
+    const pass = await hash(u.email, 10);
+    console.log(u.email, pass);
+    u.password = pass;
+  }
+
+  console.log('done');
+
+  const promises = [];
+  users.forEach(async (u: any) => {
     userRefs[u.email] = u;
+    promises.push(prisma.user.create({ data: u }));
   });
 
-  return await prisma.user.createMany({
-    data: users,
-  });
+  return await Promise.all(promises);
 }
 
 async function seedTags() {
   const applicationTagItems = [
     {
-      id: uuidv4(),
-      name: 'Backend',
+      label: 'Backend',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'Symfony',
+            label: 'Symfony',
           },
           {
-            id: uuidv4(),
-            name: 'Laravel',
+            label: 'Laravel',
           },
           {
-            id: uuidv4(),
-            name: 'Nestjs',
+            label: 'Nestjs',
           },
           {
-            id: uuidv4(),
-            name: 'Drupal 6',
+            label: 'Drupal 6',
           },
           {
-            id: uuidv4(),
-            name: 'Drupal 7',
+            label: 'Drupal 7',
           },
           {
-            id: uuidv4(),
-            name: 'Drupal 8',
+            label: 'Drupal 8',
           },
           {
-            id: uuidv4(),
-            name: 'Drupal 9',
+            label: 'Drupal 9',
           },
         ],
       },
     },
     {
-      id: uuidv4(),
-      name: 'Frontend',
+      label: 'Frontend',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'VueJs',
+            label: 'VueJs',
           },
           {
-            id: uuidv4(),
-            name: 'React',
+            label: 'React',
           },
           {
-            id: uuidv4(),
-            name: 'Svelte',
+            label: 'Svelte',
           },
           {
-            id: uuidv4(),
-            name: 'AngularJS',
+            label: 'AngularJS',
           },
           {
-            id: uuidv4(),
-            name: 'Angular',
+            label: 'Angular',
           },
         ],
       },
     },
     {
-      id: uuidv4(),
-      name: 'Database',
+      label: 'Database',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'MySQL',
+            label: 'MySQL',
           },
           {
-            id: 'redis',
-            name: 'Redis',
+            label: 'Redis',
           },
           {
-            id: uuidv4(),
-            name: 'MongoDb',
+            label: 'MongoDb',
           },
           {
-            id: uuidv4(),
-            name: 'Elastic',
+            label: 'Elastic',
           },
         ],
       },
     },
     {
-      id: uuidv4(),
-      name: 'Message Broker',
+      label: 'Message Broker',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'Apache Kafka',
+            label: 'Apache Kafka',
           },
           {
-            id: uuidv4(),
-            name: 'RabbitMQ',
+            label: 'RabbitMQ',
           },
         ],
       },
     },
     {
-      id: uuidv4(),
-      name: 'Cloud',
+      label: 'Cloud',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'Amazon AWS',
+            label: 'Amazon AWS',
           },
           {
-            id: uuidv4(),
-            name: 'Google Cloud',
+            label: 'Google Cloud',
           },
           {
-            id: uuidv4(),
-            name: 'Microsoft Azure',
+            label: 'Microsoft Azure',
           },
         ],
       },
@@ -229,33 +224,26 @@ async function seedTags() {
 
   const projectRoleItems = [
     {
-      id: uuidv4(),
-      name: 'General',
+      label: 'General',
       tags: {
         create: [
           {
-            id: uuidv4(),
-            name: 'Developer',
+            label: 'Developer',
           },
           {
-            id: uuidv4(),
-            name: 'Development Lead',
+            label: 'Development Lead',
           },
           {
-            id: uuidv4(),
-            name: 'Project Manager',
+            label: 'Project Manager',
           },
           {
-            id: uuidv4(),
-            name: 'Solution Architect',
+            label: 'Solution Architect',
           },
           {
-            id: uuidv4(),
-            name: 'Analyst',
+            label: 'Analyst',
           },
           {
-            id: uuidv4(),
-            name: 'Client Contact',
+            label: 'Client Contact',
           },
         ],
       },
@@ -264,60 +252,105 @@ async function seedTags() {
 
   const linkTypeItems = [
     {
-      id: 'general',
-      name: 'General',
+      label: 'General',
       tags: {
         create: [
           {
-            id: 'production_url',
-            name: 'Production url',
+            label: 'Production url',
           },
           {
-            id: 'bitbucket_repository',
-            name: 'Bitbucket repository',
+            label: 'Bitbucket repository',
           },
           {
-            id: 'github_repository',
-            name: 'Github repository',
+            label: 'Github repository',
           },
           {
-            id: 'confluence_page',
-            name: 'Confluence page',
+            label: 'Confluence page',
           },
         ],
       },
     },
   ];
 
-  const tagGroups = [
+  const tagGroupsAccount1 = [
     {
-      id: 'application_tags',
-      name: 'Application tags',
+      accountId: accountRefs['account_1'].id,
+      label: 'Application tags',
       tagTypes: {
-        create: applicationTagItems,
+        create: cloneDeep(applicationTagItems),
       },
     },
     {
-      id: 'project_role_tags',
-      name: 'Project role tags',
+      accountId: accountRefs['account_1'].id,
+      label: 'Project role tags',
       tagTypes: {
-        create: projectRoleItems,
+        create: cloneDeep(projectRoleItems),
       },
     },
     {
-      id: 'link_type_tags',
-      name: 'Link type tags',
+      accountId: accountRefs['account_1'].id,
+      label: 'Link type tags',
       tagTypes: {
-        create: linkTypeItems,
+        create: cloneDeep(linkTypeItems),
+      },
+    },
+  ];
+
+  const tagGroupsAccount2 = [
+    {
+      accountId: accountRefs['account_2'].id,
+      label: 'Application tags',
+      tagTypes: {
+        create: cloneDeep(applicationTagItems),
+      },
+    },
+    {
+      accountId: accountRefs['account_2'].id,
+      label: 'Project role tags',
+      tagTypes: {
+        create: cloneDeep(projectRoleItems),
+      },
+    },
+    {
+      accountId: accountRefs['account_2'].id,
+      label: 'Link type tags',
+      tagTypes: {
+        create: cloneDeep(linkTypeItems),
       },
     },
   ];
 
   const promises = [];
-  tagGroups.forEach(async (tg) => {
-    tg.tagTypes.create.forEach((tt) => {
+
+  tagGroupsAccount2.forEach(async (tg: any) => {
+    tg.id = uuidv4();
+    tg.code = slugify(tg.label, { lower: true });
+    tg.tagTypes.create.forEach((tt: any) => {
+      tt.id = uuidv4();
+      tt.code = slugify(tt.label, { lower: true });
       tt.tags.create.forEach((t) => {
-        tagRefs[t.name] = t;
+        t.id = uuidv4();
+        t.code = slugify(t.label, { lower: true });
+        tagRefs[tg.accountId + '-' + t.code] = t;
+      });
+    });
+    promises.push(
+      prisma.tagGroup.create({
+        data: tg,
+      }),
+    );
+  });
+
+  tagGroupsAccount1.forEach(async (tg: any) => {
+    tg.id = uuidv4();
+    tg.code = slugify(tg.label, { lower: true });
+    tg.tagTypes.create.forEach((tt: any) => {
+      tt.id = uuidv4();
+      tt.code = slugify(tt.label, { lower: true });
+      tt.tags.create.forEach((t) => {
+        t.id = uuidv4();
+        t.code = slugify(t.label, { lower: true });
+        tagRefs[tg.accountId + '-' + t.code] = t;
       });
     });
     promises.push(
@@ -334,19 +367,20 @@ async function seedApplications() {
   const applications: any[] = [
     {
       id: uuidv4(),
-      clientId: clientRefs['clp'].id,
-      name: 'CLP Foldertool',
+      accountId: accountRefs['account_1'].id,
+      clientId: clientRefs['client_1'].id,
+      name: 'Application 1',
       description: null,
       teamMembers: {
         create: [
           {
             id: uuidv4(),
             userFullName:
-              userRefs['kris.geens@ausy.be'].firstName +
+              userRefs['john.doe@example.com'].firstName +
               ' ' +
-              userRefs['kris.geens@ausy.be'].lastName,
-            userId: userRefs['kris.geens@ausy.be'].id,
-            tagId: tagRefs['Development Lead'].id,
+              userRefs['john.doe@example.com'].lastName,
+            userId: userRefs['john.doe@example.com'].id,
+            tagId: tagRefs['account_1-development-lead'].id,
           },
         ],
       },
@@ -354,8 +388,8 @@ async function seedApplications() {
         create: [
           {
             id: uuidv4(),
-            tagId: tagRefs['Redis'].id,
-            value: tagRefs['Redis'].name,
+            tagId: tagRefs['account_1-redis'].id,
+            label: tagRefs['account_1-redis'].label,
           },
         ],
       },
@@ -363,15 +397,15 @@ async function seedApplications() {
         create: [
           {
             id: uuidv4(),
-            tagId: tagRefs['Production url'].id,
+            tagId: tagRefs['account_1-production-url'].id,
             type: 'production_url',
-            url: 'https://folderapp.be',
+            url: 'https://production_url.com',
           },
           {
             id: uuidv4(),
-            tagId: tagRefs['Bitbucket repository'].id,
+            tagId: tagRefs['account_1-bitbucket-repository'].id,
             type: 'bitbucket_repository',
-            url: 'https://bitbucket.org/ausybenelux/clp-foldertool',
+            url: 'https://bitbucket.org/company/repo',
           },
         ],
       },
@@ -386,50 +420,23 @@ async function seedApplications() {
     },
     {
       id: uuidv4(),
-      clientId: clientRefs['rpcg'].id,
-      name: 'RPCG Supplier Portal',
+      accountId: accountRefs['account_1'].id,
+      clientId: clientRefs['client_1'].id,
+      name: 'Application 2',
       description: null,
     },
     {
       id: uuidv4(),
-      clientId: clientRefs['earli'].id,
-      name: 'Earli Conference management',
+      accountId: accountRefs['account_1'].id,
+      clientId: clientRefs['client_1'].id,
+      name: 'Application 3',
       description: null,
     },
     {
       id: uuidv4(),
-      clientId: clientRefs['rpcg'].id,
-      name: 'RPCG Margin Simulator',
-      description: null,
-    },
-    {
-      id: uuidv4(),
-      clientId: clientRefs['so'].id,
-      name: 'Stedelijk Onderwijs Antwerpen - Online Inschrijven DKO/VWO',
-      description: null,
-    },
-    {
-      id: uuidv4(),
-      clientId: clientRefs['so'].id,
-      name: 'Stedelijk Onderwijs Antwerpen - Vraag en Meldpunt',
-      description: null,
-    },
-    {
-      id: uuidv4(),
-      clientId: clientRefs['irisnet'].id,
-      name: 'IrisNET - Customer Portal',
-      description: null,
-    },
-    {
-      id: uuidv4(),
-      clientId: clientRefs['kul'].id,
-      name: 'KUlag - Publieke Website',
-      description: null,
-    },
-    {
-      id: uuidv4(),
-      clientId: clientRefs['kul'].id,
-      name: 'KUlag - Screening Applicatie',
+      accountId: accountRefs['account_2'].id,
+      clientId: clientRefs['client_3'].id,
+      name: 'Application 4',
       description: null,
     },
   ];

@@ -10,7 +10,6 @@ async function bootstrap() {
     cert: fs.readFileSync('./keys/server.crt'),
   };
   httpsOptions = process.env.PORT !== '3000' ? null : httpsOptions;
-  console.log(httpsOptions);
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
   });

@@ -40,9 +40,8 @@ async function seedAccounts() {
 async function seedClients() {
   const clients = [];
 
-  const account = Math.floor(Math.random() * 100) + 1;
-
   for (let i = 1; i <= 100; i++) {
+    const account = Math.floor(Math.random() * 100) + 1;
     clients.push({
       id: 'client_' + i,
       accountId: 'account_' + account,

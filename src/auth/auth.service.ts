@@ -34,7 +34,12 @@ export class AuthService {
       return null;
     }
 
-    return { id: user.id, accountId: user.accountId };
+    return {
+      id: user.id,
+      accountId: user.accountId,
+      name: user.firstName + ' ' + user.lastName,
+      initials: user.firstName.charAt(0) + user.lastName.charAt(0),
+    };
   }
 
   async login(user: any) {

@@ -9,8 +9,11 @@ import DataTableOptionsDto from './dto/data-table-options.dto';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
-  async forSelect(): Promise<User[]> {
+  async forSelect(accountId: string): Promise<User[]> {
     return this.prisma.user.findMany({
+      where: {
+        accountId: accountId,
+      },
       orderBy: {
         firstName: 'asc',
       },
@@ -41,20 +44,18 @@ export class UsersService {
       accountId: accountId,
     };
     if (dataTableOptions.term()) {
-      where = {
-        OR: [
-          {
-            firstName: {
-              contains: dataTableOptions.term(),
-            },
+      where.OR = [
+        {
+          firstName: {
+            contains: dataTableOptions.term(),
           },
-          {
-            lastName: {
-              contains: dataTableOptions.term(),
-            },
+        },
+        {
+          lastName: {
+            contains: dataTableOptions.term(),
           },
-        ],
-      };
+        },
+      ];
     }
     return where;
   }

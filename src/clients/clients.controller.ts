@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpException,
   HttpStatus,
   Param,
@@ -68,9 +67,9 @@ export class ClientsController {
   @Post('')
   async addClient(
     @Body() data: AddClientDto,
-    @Headers('account') account: string,
+    @CurrentAccount() accountId,
   ): Promise<Client> {
-    return this.clientsService.createClient(data, account);
+    return this.clientsService.createClient(data, accountId);
   }
   @Put('/:id')
   async updateClient(

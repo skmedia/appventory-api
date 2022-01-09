@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { IsArray, IsIn, IsOptional } from 'class-validator';
 
 export class DataTableOptionsDto {
   @Type(() => Number)
@@ -10,7 +11,15 @@ export class DataTableOptionsDto {
   @Type(() => String)
   search?: string = '';
 
+  @IsOptional()
+  @IsArray()
+  @Type(() => String)
+  //@IsIn(['name', 'client.name'], { message: 'invalid sort field' })
   sortBy?: Array<string>;
+
+  @IsOptional()
+  @IsArray()
+  @Type(() => String)
   sortDesc?: Array<string>;
 
   skip(): number {

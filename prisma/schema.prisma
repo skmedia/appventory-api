@@ -23,15 +23,19 @@ model Account {
 }
 
 model User {
-  id        String  @id @db.VarChar(255)
-  email     String  @unique
+  id        String @id @db.VarChar(255)
+  email     String @unique
   password  String
-  firstName String? @map("first_name")
-  lastName  String? @map("last_name")
-  role      String?
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
+  role      String
 
   account   Account @relation(fields: [accountId], references: [id])
   accountId String  @map("account_id") @db.VarChar(255)
+
+  active    Boolean? @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   ApplicationTeamMember ApplicationTeamMember[]
   @@map("users")
@@ -39,10 +43,13 @@ model User {
 
 model Client {
   id   String @id @db.VarChar(255)
-  name String @unique @db.VarChar(255)
+  name String @db.VarChar(255)
 
   account   Account @relation(fields: [accountId], references: [id])
   accountId String  @map("account_id") @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   applications Application[]
 
@@ -71,6 +78,9 @@ model Application {
   account   Account @relation(fields: [accountId], references: [id])
   accountId String  @map("account_id") @db.VarChar(255)
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   teamMembers ApplicationTeamMember[]
   assets      ApplicationAsset[]
   notes       ApplicationNote[]
@@ -88,6 +98,9 @@ model ApplicationNote {
   application   Application? @relation(fields: [applicationId], references: [id])
   applicationId String?      @map("application_id") @db.VarChar(255)
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("application_notes")
 }
 
@@ -101,6 +114,9 @@ model ApplicationLink {
 
   tag   Tag?    @relation(fields: [tagId], references: [id])
   tagId String? @map("tag_id") @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("application_links")
 }
@@ -140,16 +156,10 @@ model ApplicationAsset {
   description   String?
   application   Application? @relation(fields: [applicationId], references: [id])
   applicationId String?      @map("application_id") @db.VarChar(255)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
   @@map("application_assets")
-}
-
-model ApplicationType {
-  id          String  @id @db.VarChar(255)
-  name        String
-  description String?
-
-  @@map("application_types")
 }
 
 model TagGroup {
@@ -161,15 +171,21 @@ model TagGroup {
   account   Account @relation(fields: [accountId], references: [id])
   accountId String  @map("account_id") @db.VarChar(255)
 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@unique([code, accountId])
   @@map("tag_groups")
 }
 
 model TagType {
-  id    String @id @db.VarChar(255)
-  code  String
-  label String
-  tags  Tag[]
+  id        String   @id @db.VarChar(255)
+  code      String
+  label     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tags Tag[]
 
   tagGroup   TagGroup? @relation(fields: [tagGroupId], references: [id])
   tagGroupId String?   @map("tag_group_id") @db.VarChar(255)
@@ -184,6 +200,8 @@ model Tag {
   code                   String
   tagType                TagType?                @relation(fields: [tagTypeId], references: [id])
   tagTypeId              String?                 @map("tag_type_id") @db.VarChar(255)
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
   applicationLinks       ApplicationLink[]
   applicationTeamMembers ApplicationTeamMember[]
   applicationTags        ApplicationTag[]

@@ -26,8 +26,8 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get('for-select')
-  async forSelect() {
-    const items = await this.usersService.forSelect();
+  async forSelect(@CurrentAccount() accountId) {
+    const items = await this.usersService.forSelect(accountId);
     return {
       items: items,
     };

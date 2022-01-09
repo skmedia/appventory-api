@@ -76,14 +76,48 @@ export class ApplicationsService {
     return where;
   }
 
+  buildOrderBy(
+    dataTableOptions: DataTableOptionsDto,
+  ): Array<Prisma.ApplicationOrderByWithRelationInput> {
+    let orderBy: Array<Prisma.ApplicationOrderByWithRelationInput> = [];
+
+    const sortDir = (value: string) => (value === 'true' ? 'desc' : 'asc');
+
+    if (dataTableOptions?.sortBy) {
+      for (let i = 0; i < dataTableOptions.sortBy.length; i++) {
+        if (dataTableOptions.sortBy[i] === 'name') {
+          orderBy.push({
+            [dataTableOptions.sortBy[i]]: sortDir(dataTableOptions.sortDesc[i]),
+          });
+        }
+        if (dataTableOptions.sortBy[i] === 'client.name') {
+          orderBy.push({
+            client: {
+              name: sortDir(dataTableOptions.sortDesc[i]),
+            },
+          });
+        }
+      }
+    }
+    if (!orderBy.length) {
+      orderBy = [
+        {
+          name: 'asc',
+        },
+      ];
+    }
+    return orderBy;
+  }
+
   async getList(
     dataTableOptions: DataTableOptionsDto,
     account: string,
   ): Promise<any[]> {
     const where = this.buildWhere(dataTableOptions, account);
+    const orderBy = this.buildOrderBy(dataTableOptions);
 
     return this.prisma.application.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: orderBy,
       skip: dataTableOptions.skip(),
       take: dataTableOptions.take(),
       where: where,
@@ -134,8 +168,8 @@ export class ApplicationsService {
     const newLinks = data.links.map((t) => {
       return {
         id: uuidv4(),
-        type: t.Tag.id,
-        tagId: t.Tag.id,
+        type: t.tag.id,
+        tagId: t.tag.id,
         url: t.url,
       };
     });
@@ -143,7 +177,7 @@ export class ApplicationsService {
       return {
         id: uuidv4(),
         userId: t.userId,
-        tagId: t.Tag.id,
+        tagId: t.tag.id,
         userFullName: t.userFullName,
       };
     });
@@ -223,8 +257,8 @@ export class ApplicationsService {
     const newLinks = input.links.map((t) => {
       return {
         id: uuidv4(),
-        type: t.Tag.id,
-        tagId: t.Tag.id,
+        type: t.tag.id,
+        tagId: t.tag.id,
         url: t.url,
       };
     });
@@ -238,7 +272,7 @@ export class ApplicationsService {
       return {
         id: uuidv4(),
         userId: t.userId,
-        tagId: t.Tag.id,
+        tagId: t.tag.id,
         userFullName: t.userFullName,
       };
     });

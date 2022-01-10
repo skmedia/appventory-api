@@ -19,14 +19,16 @@ const userRefs = {};
 const clientRefs = {};
 
 async function seedAccounts() {
-  const accounts = [];
-
-  for (let i = 1; i <= 100; i++) {
-    accounts.push({
-      id: 'account_' + i,
-      name: 'Account ' + i,
-    });
-  }
+  const accounts = [
+    {
+      id: 'account_1',
+      name: 'Account 1',
+    },
+    {
+      id: 'account_2',
+      name: 'Account 2',
+    },
+  ];
 
   accounts.forEach(async (c) => {
     accountRefs[c.id] = c;
@@ -38,16 +40,23 @@ async function seedAccounts() {
 }
 
 async function seedClients() {
-  const clients = [];
-
-  for (let i = 1; i <= 100; i++) {
-    const account = Math.floor(Math.random() * 100) + 1;
-    clients.push({
-      id: 'client_' + i,
-      accountId: 'account_' + account,
-      name: 'Client ' + i,
-    });
-  }
+  const clients = [
+    {
+      id: 'client_1',
+      accountId: 'account_1',
+      name: 'Client 1',
+    },
+    {
+      id: 'client_2',
+      accountId: 'account_1',
+      name: 'Client 2',
+    },
+    {
+      id: 'client_3',
+      accountId: 'account_2',
+      name: 'Client 3',
+    },
+  ];
 
   clients.forEach(async (c) => {
     clientRefs[c.id] = c;
@@ -96,6 +105,7 @@ async function seedUsers() {
 
   for (const u of users) {
     const pass = await hash(u.email, 10);
+    console.log(u.email, pass);
     u.password = pass;
   }
 
@@ -428,18 +438,6 @@ async function seedApplications() {
       description: null,
     },
   ];
-
-  for (let i = 5; i <= 100; i++) {
-    const account = Math.floor(Math.random() * 100) + 1;
-    const client = Math.floor(Math.random() * 100) + 1;
-    applications.push({
-      id: uuidv4(),
-      accountId: accountRefs['account_' + account].id,
-      clientId: clientRefs['client_' + client].id,
-      name: 'Application ' + i,
-      description: null,
-    });
-  }
 
   const promises = [];
   applications.forEach((app) => {

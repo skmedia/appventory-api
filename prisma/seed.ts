@@ -105,7 +105,6 @@ async function seedUsers() {
 
   for (const u of users) {
     const pass = await hash(u.email, 10);
-    console.log(u.email, pass);
     u.password = pass;
   }
 
@@ -270,6 +269,19 @@ async function seedTags() {
     },
   ];
 
+  const noteTypeItems = [
+    {
+      label: 'General',
+      tags: {
+        create: [
+          {
+            label: 'General',
+          },
+        ],
+      },
+    },
+  ];
+
   const tagGroupsAccount1 = [
     {
       accountId: accountRefs['account_1'].id,
@@ -290,6 +302,13 @@ async function seedTags() {
       label: 'Link type tags',
       tagTypes: {
         create: cloneDeep(linkTypeItems),
+      },
+    },
+    {
+      accountId: accountRefs['account_1'].id,
+      label: 'Note type tags',
+      tagTypes: {
+        create: cloneDeep(noteTypeItems),
       },
     },
   ];
@@ -314,6 +333,13 @@ async function seedTags() {
       label: 'Link type tags',
       tagTypes: {
         create: cloneDeep(linkTypeItems),
+      },
+    },
+    {
+      accountId: accountRefs['account_2'].id,
+      label: 'Note type tags',
+      tagTypes: {
+        create: cloneDeep(noteTypeItems),
       },
     },
   ];
@@ -411,6 +437,7 @@ async function seedApplications() {
         create: [
           {
             id: uuidv4(),
+            tagId: tagRefs['account_1-general'].id,
             text: 'note 1',
           },
         ],

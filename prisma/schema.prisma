@@ -92,11 +92,12 @@ model Application {
 }
 
 model ApplicationNote {
-  id   String @id @db.VarChar(255)
-  text String @db.LongText
-
+  id            String       @id @db.VarChar(255)
+  text          String       @db.LongText
   application   Application? @relation(fields: [applicationId], references: [id])
   applicationId String?      @map("application_id") @db.VarChar(255)
+  tag           Tag?         @relation(fields: [tagId], references: [id])
+  tagId         String?      @map("tag_id") @db.VarChar(255)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
@@ -206,5 +207,6 @@ model Tag {
   applicationTeamMembers ApplicationTeamMember[]
   applicationTags        ApplicationTag[]
 
+  ApplicationNote ApplicationNote[]
   @@map("tags")
 }

@@ -17,6 +17,9 @@ export class AddApplicationDto {
   links: Array<any>;
 
   @IsOptional()
+  notes: Array<any>;
+
+  @IsOptional()
   teamMembers: Array<any>;
 
   @IsOptional()

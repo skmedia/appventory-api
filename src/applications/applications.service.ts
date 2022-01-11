@@ -4,6 +4,7 @@ import {
   Application,
   ApplicationAsset,
   ApplicationLink,
+  ApplicationNote,
   ApplicationTag,
   ApplicationTeamMember,
   Prisma,
@@ -33,7 +34,11 @@ export class ApplicationsService {
             tag: true,
           },
         },
-        notes: true,
+        notes: {
+          include: {
+            tag: true,
+          },
+        },
         assets: true,
         links: {
           include: {
@@ -173,6 +178,14 @@ export class ApplicationsService {
         url: t.url,
       };
     });
+    const newNotes = data.notes.map((t) => {
+      return {
+        id: uuidv4(),
+        type: t.tag.id,
+        tagId: t.tag.id,
+        text: t.text,
+      };
+    });
     const newTeamMembers = data.teamMembers.map((t) => {
       return {
         id: uuidv4(),
@@ -207,6 +220,11 @@ export class ApplicationsService {
             data: newLinks,
           },
         },
+        notes: {
+          createMany: {
+            data: newNotes,
+          },
+        },
         teamMembers: {
           createMany: {
             data: newTeamMembers,
@@ -220,6 +238,7 @@ export class ApplicationsService {
     application: Application & {
       tags: Array<ApplicationTag>;
       links: Array<ApplicationLink>;
+      notes: Array<ApplicationNote>;
       teamMembers: Array<ApplicationTeamMember>;
       assets: Array<ApplicationAsset>;
     },
@@ -262,6 +281,53 @@ export class ApplicationsService {
         url: t.url,
       };
     });
+
+    const notesToDelete = application.notes
+      .filter((note) => {
+        const found = input.notes.find(({ id }) => id === note.id);
+        if (found && found?.isNew) {
+          return false;
+        }
+        return !!found === false; // existing note is no longer in input notes, so remove it
+      })
+      .map((note) => {
+        return {
+          id: note.id,
+        };
+      });
+
+    const notesToAdd = input.notes
+      .filter((note) => {
+        return note?.isNew;
+      })
+      .map((note) => {
+        return {
+          id: note.id,
+          tagId: note.tag.id,
+          text: note.text,
+        };
+      });
+
+    const notesToUpdate = input.notes
+      .filter((note) => {
+        const found = application.notes.find(({ id }) => id === note.id);
+        return !!found === true;
+      })
+      .map((note) => {
+        return {
+          where: {
+            id: note.id,
+          },
+          data: {
+            tagId: note.tag.id,
+            text: note.text,
+          },
+        };
+      });
+
+    console.log('notesToDelete', notesToDelete);
+    console.log('notesToUpdate', notesToUpdate);
+    console.log('notesToAdd', notesToAdd);
 
     const deleteExistingTeamMembers = application.teamMembers.map((t) => {
       return {
@@ -319,6 +385,14 @@ export class ApplicationsService {
         }),
         createMany: {
           data: newAssets,
+          skipDuplicates: true,
+        },
+      },
+      notes: {
+        deleteMany: notesToDelete,
+        updateMany: notesToUpdate,
+        createMany: {
+          data: notesToAdd,
           skipDuplicates: true,
         },
       },

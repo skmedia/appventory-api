@@ -1,7 +1,18 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
+import NoteDto from './note.dto';
 
-interface TagInput {
+class TagInput {
+  @IsNotEmpty({ message: 'tagId is required' })
   id: string;
+
+  @IsNotEmpty({ message: 'tagLabel is required' })
   label: string;
 }
 
@@ -13,16 +24,26 @@ export class UpdateApplicationDto {
   client: any;
 
   @IsOptional()
+  @MaxLength(500, {
+    message: 'Description must be max $constraint1 characters long',
+  })
   description: string;
 
   @IsOptional()
-  tags: Array<TagInput>;
+  @ValidateNested()
+  @Type(() => TagInput)
+  tags: TagInput[];
 
   @IsOptional()
   links: Array<any>;
 
   @IsOptional()
   teamMembers: Array<any>;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NoteDto)
+  notes: NoteDto[];
 
   @IsOptional()
   fileDescriptions: Array<string>;

@@ -25,7 +25,7 @@ export class AssetsController {
     @Body('fileDescriptions') fileDescriptions: Array<any>,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const result = this.assetsService.upload(id, files, fileDescriptions);
+    const result = await this.assetsService.upload(id, files, fileDescriptions);
 
     return result;
   }

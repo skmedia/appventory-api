@@ -154,6 +154,8 @@ model ApplicationAsset {
   id            String       @id @db.VarChar(255)
   type          String       @db.VarChar(255)
   filename      String       @db.VarChar(255)
+  key           String       @db.VarChar(255)
+  location      String       @db.VarChar(255)
   description   String?
   application   Application? @relation(fields: [applicationId], references: [id])
   applicationId String?      @map("application_id") @db.VarChar(255)

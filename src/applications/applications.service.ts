@@ -14,12 +14,14 @@ import { v4 as uuidv4 } from 'uuid';
 import UpdateApplicationDto from './dto/update-application.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import DataTableOptionsDto from './dto/data-table-options.dto';
+import { AwsFileService } from 'src/assets/aws-file.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     private prisma: PrismaService,
     private assetsService: AssetsService,
+    private awsFileService: AwsFileService,
   ) {}
 
   async findById(id: string): Promise<Application | any | null> {
@@ -199,39 +201,46 @@ export class ApplicationsService {
         id: uuidv4(),
         type: a.type,
         filename: a.filename,
+        key: a.key,
+        location: a.location,
         description: a.description,
       };
     });
-    return this.prisma.application.create({
-      data: {
-        ...application,
-        assets: {
-          createMany: {
-            data: newAssets,
+    try {
+      const app = this.prisma.application.create({
+        data: {
+          ...application,
+          assets: {
+            createMany: {
+              data: newAssets,
+            },
+          },
+          tags: {
+            createMany: {
+              data: newTags,
+            },
+          },
+          links: {
+            createMany: {
+              data: newLinks,
+            },
+          },
+          notes: {
+            createMany: {
+              data: newNotes,
+            },
+          },
+          teamMembers: {
+            createMany: {
+              data: newTeamMembers,
+            },
           },
         },
-        tags: {
-          createMany: {
-            data: newTags,
-          },
-        },
-        links: {
-          createMany: {
-            data: newLinks,
-          },
-        },
-        notes: {
-          createMany: {
-            data: newNotes,
-          },
-        },
-        teamMembers: {
-          createMany: {
-            data: newTeamMembers,
-          },
-        },
-      },
-    });
+      });
+      return app;
+    } catch (e) {
+      this.awsFileService.deleteKeys(newAssets.map((f) => f.key));
+    }
   }
 
   async updateApplication(
@@ -325,10 +334,6 @@ export class ApplicationsService {
         };
       });
 
-    console.log('notesToDelete', notesToDelete);
-    console.log('notesToUpdate', notesToUpdate);
-    console.log('notesToAdd', notesToAdd);
-
     const deleteExistingTeamMembers = application.teamMembers.map((t) => {
       return {
         tagId: t.tagId,
@@ -352,6 +357,8 @@ export class ApplicationsService {
       return {
         id: uuidv4(),
         type: a.type,
+        key: a.key,
+        location: a.location,
         filename: a.filename,
         description: a.description,
       };
@@ -426,19 +433,26 @@ export class ApplicationsService {
       });
 
       if (filesToDelete.length) {
+        this.awsFileService.deleteKeys(filesToDelete.map((f) => f.key));
+        /*
         await this.assetsService.deleteFilesInFolder(
           application.id,
           filesToDelete.map((file) => file.filename),
         );
+        */
       }
+
+      /*
       await this.assetsService.moveFiles(
         application.id,
         input.filesToAdd.map((f) => f.path),
       );
+      */
 
       return application;
     } catch (e) {
       Logger.error('could not update application', e);
+      this.awsFileService.deleteKeys(input.filesToAdd.map((f) => f.key));
       throw e;
     }
   }
@@ -463,13 +477,20 @@ export class ApplicationsService {
         const files = await this.prisma.applicationAsset.findMany({
           where: { applicationId: id },
         });
+
+        await this.awsFileService.deleteKeys(files.map((f) => f.key));
+
         await this.prisma.applicationAsset.deleteMany({
           where: { applicationId: id },
         });
+
+        /*
         await this.assetsService.deleteFilesInFolder(
           id,
           files.map((f) => f.filename),
         );
+        */
+
         await this.prisma.application.delete({
           where: { id },
         });

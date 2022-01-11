@@ -4,18 +4,28 @@ import * as path from 'path';
 import * as os from 'os';
 import slugify from 'slugify';
 import { AssetsRepository } from './assets.repository';
+import { AwsFileService } from './aws-file.service';
 
 // get from env
 const appDir = './uploads/applications';
 
 @Injectable()
 export class AssetsService {
-  constructor(private repo: AssetsRepository) {}
-  upload(
+  constructor(
+    private repo: AssetsRepository,
+    private awsFileService: AwsFileService,
+  ) {}
+  async upload(
     applicationId: string,
     files: Array<Express.Multer.File>,
     fileDescriptions: Array<any>,
   ) {
+    return await this.awsFileService.upload(
+      applicationId,
+      files,
+      fileDescriptions,
+    );
+
     const applicationAssetsDir = fs.mkdtempSync(
       path.join(os.tmpdir(), applicationId + '-'),
     );

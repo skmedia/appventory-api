@@ -5,11 +5,13 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 
 async function bootstrap() {
-  let httpsOptions = {
-    key: fs.readFileSync('./keys/localhost-key.pem'),
-    cert: fs.readFileSync('./keys/localhost.pem'),
-  };
-  httpsOptions = process.env.PORT !== '3000' ? null : httpsOptions;
+  let httpsOptions = null;
+  if (process.env.PORT === '3000') {
+    httpsOptions = {
+      key: fs.readFileSync('./keys/localhost-key.pem'),
+      cert: fs.readFileSync('./keys/localhost.pem'),
+    };
+  }
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
   });

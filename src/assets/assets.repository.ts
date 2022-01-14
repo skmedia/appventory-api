@@ -6,10 +6,13 @@ import { PrismaService } from 'src/prisma.service';
 export class AssetsRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findOneById(id: string): Promise<ApplicationAsset> {
+  async findOneById(id: string): Promise<any> {
     return this.prisma.applicationAsset.findUnique({
       where: {
         id,
+      },
+      include: {
+        application: true,
       },
     });
   }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -107,9 +107,12 @@ export class AssetsService {
     });
   }
 
-  async download(id: string) {
+  async getFileAsStream(id: string, accountId: string) {
     const asset = await this.repo.findOneById(id);
-    const file = appDir + '/' + asset.applicationId + '/' + asset.filename;
-    return fs.createReadStream(file);
+    if (asset.application.accountId !== accountId) {
+      throw new UnauthorizedException('invalid account');
+    }
+    const file = await this.awsFileService.getFileAsStream(asset.key);
+    return file;
   }
 }

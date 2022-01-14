@@ -6,8 +6,8 @@ import { PrismaService } from './prisma.service';
 
 async function bootstrap() {
   let httpsOptions = {
-    key: fs.readFileSync('./keys/server.key'),
-    cert: fs.readFileSync('./keys/server.crt'),
+    key: fs.readFileSync('./keys/localhost-key.pem'),
+    cert: fs.readFileSync('./keys/localhost.pem'),
   };
   httpsOptions = process.env.PORT !== '3000' ? null : httpsOptions;
   const app = await NestFactory.create(AppModule, {

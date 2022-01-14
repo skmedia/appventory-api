@@ -7,9 +7,11 @@ import {
   UploadedFiles,
   UseInterceptors,
   StreamableFile,
+  Res,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-
+import { Response } from 'express';
+import { CurrentAccount } from 'src/auth/auth.decorator';
 import { AssetsService } from './assets.service';
 
 @Controller({
@@ -30,9 +32,13 @@ export class AssetsController {
     return result;
   }
   @Get('download/:id')
-  async download(@Param('id') id: string) {
-    const stream = await this.assetsService.download(id);
-
-    return new StreamableFile(stream);
+  async download(
+    @CurrentAccount() accountId,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const stream = await this.assetsService.getFileAsStream(id, accountId);
+    stream.pipe(res);
+    return res;
   }
 }

@@ -1,5 +1,5 @@
 import S3 from 'aws-sdk/clients/s3';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AssetsRepository } from './assets.repository';
 import slugify from 'slugify';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,6 +51,15 @@ export class AwsFileService {
         fileList: values.map((v) => v),
       };
     });
+  }
+
+  async getFileAsStream(key: string) {
+    return this.s3Client
+      .getObject({
+        Bucket: process.env.BUCKETEER_BUCKET_NAME,
+        Key: key,
+      })
+      .createReadStream();
   }
 
   async deleteKeys(keys: any[]) {

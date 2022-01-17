@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as fs from 'fs';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   let httpsOptions = null;
@@ -23,6 +24,7 @@ async function bootstrap() {
       validateCustomDecorators: true,
     }),
   );
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableVersioning({
     type: VersioningType.URI,
   });

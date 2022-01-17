@@ -11,6 +11,7 @@ import { TagTypesModule } from './tag-types/tag-types.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { APP_GUARD } from '@nestjs/core';
     TagGroupsModule,
     TagTypesModule,
     AuthModule,
+    AccountsModule,
   ],
   controllers: [AppController],
   providers: [

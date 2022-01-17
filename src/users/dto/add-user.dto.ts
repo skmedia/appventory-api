@@ -1,12 +1,5 @@
-import {
-  IsEmail,
-  IsIn,
-  IsNotEmpty,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, Validate } from 'class-validator';
+import { UserIsUnique } from '../unique-user.validator';
 
 export class AddUserDto {
   @IsNotEmpty({ message: 'lastname is required' })
@@ -21,15 +14,8 @@ export class AddUserDto {
 
   @IsNotEmpty({ message: 'email is required' })
   @IsEmail()
+  @Validate(UserIsUnique)
   email: string;
-
-  @IsString()
-  @MinLength(4)
-  @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
-  })
-  password: string;
 }
 
 export default AddUserDto;

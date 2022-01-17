@@ -5,6 +5,7 @@ import AddUserDto from './dto/add-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
 import { v4 as uuidv4 } from 'uuid';
 import DataTableOptionsDto from './dto/data-table-options.dto';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -87,6 +88,8 @@ export class UsersService {
   }
 
   async createUser(input: AddUserDto, accountId: string): Promise<User> {
+    const password = await hash(uuidv4(), 10);
+
     const data: Prisma.UserCreateInput = {
       id: uuidv4(),
       account: {
@@ -98,7 +101,7 @@ export class UsersService {
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email,
-      password: input.password,
+      password: password,
     };
     return this.prisma.user.create({
       data: data,

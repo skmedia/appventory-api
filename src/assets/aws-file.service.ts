@@ -18,14 +18,14 @@ export class AwsFileService {
     fileDescriptions: Array<any>,
   ) {
     const i = 0;
-    const p = [];
+    const promises = [];
 
-    files.every((f) => {
+    files.forEach((f) => {
       const filename = slugify(f.originalname, { lower: true });
       const key = uuidv4() + '-' + filename;
 
-      const uploadResult = new Promise((resolve, reject) => {
-        return this.s3Client
+      const uploadResult = new Promise((resolve) => {
+        this.s3Client
           .upload({
             Bucket: process.env.BUCKETEER_BUCKET_NAME,
             Key: key,
@@ -42,10 +42,10 @@ export class AwsFileService {
             });
           });
       });
-      p.push(uploadResult);
+      promises.push(uploadResult);
     });
 
-    return Promise.all(p).then((values) => {
+    return Promise.all(promises).then((values) => {
       return {
         applicationId,
         fileList: values.map((v) => v),

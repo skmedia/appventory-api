@@ -12,7 +12,7 @@ datasource db {
 
 model Account {
   id           String        @id @db.VarChar(255)
-  name         String        @unique
+  name         String
   User         User[]
   applications Application[]
   tagGroups    TagGroup[]

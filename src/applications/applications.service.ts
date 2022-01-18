@@ -14,14 +14,12 @@ import { v4 as uuidv4 } from 'uuid';
 import UpdateApplicationDto from './dto/update-application.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import DataTableOptionsDto from './dto/data-table-options.dto';
-import { AwsFileService } from 'src/assets/aws-file.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     private prisma: PrismaService,
     private assetsService: AssetsService,
-    private awsFileService: AwsFileService,
   ) {}
 
   async findById(id: string): Promise<Application | any | null> {
@@ -239,7 +237,7 @@ export class ApplicationsService {
       });
       return app;
     } catch (e) {
-      this.awsFileService.deleteKeys(newAssets.map((f) => f.key));
+      this.assetsService.deleteFiles(newAssets);
     }
   }
 
@@ -433,26 +431,13 @@ export class ApplicationsService {
       });
 
       if (filesToDelete.length) {
-        this.awsFileService.deleteKeys(filesToDelete.map((f) => f.key));
-        /*
-        await this.assetsService.deleteFilesInFolder(
-          application.id,
-          filesToDelete.map((file) => file.filename),
-        );
-        */
+        this.assetsService.deleteFiles(filesToDelete);
       }
-
-      /*
-      await this.assetsService.moveFiles(
-        application.id,
-        input.filesToAdd.map((f) => f.path),
-      );
-      */
 
       return application;
     } catch (e) {
       Logger.error('could not update application', e);
-      this.awsFileService.deleteKeys(input.filesToAdd.map((f) => f.key));
+      this.assetsService.deleteFiles(input.filesToAdd);
       throw e;
     }
   }
@@ -478,22 +463,15 @@ export class ApplicationsService {
           where: { applicationId: id },
         });
 
-        await this.awsFileService.deleteKeys(files.map((f) => f.key));
-
         await this.prisma.applicationAsset.deleteMany({
           where: { applicationId: id },
         });
 
-        /*
-        await this.assetsService.deleteFilesInFolder(
-          id,
-          files.map((f) => f.filename),
-        );
-        */
-
         await this.prisma.application.delete({
           where: { id },
         });
+
+        this.assetsService.deleteFiles(files);
       });
   }
 }

@@ -12,12 +12,8 @@ export class UserIsUnique implements ValidatorConstraintInterface {
   constructor(private userService: UsersService) {}
 
   async validate(value: string) {
-    try {
-      const user = await this.userService.findByEmail(value);
-      if (user) {
-        return false;
-      }
-    } catch (e) {
+    const user = await this.userService.findByEmail(value);
+    if (user) {
       return false;
     }
 

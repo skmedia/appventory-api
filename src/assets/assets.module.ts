@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 import { PrismaService } from 'src/prisma.service';
 import { AssetsController } from './assets.controller';
@@ -9,7 +9,6 @@ import { AwsFileService } from './aws-file.service';
 const s3ClientFactory = {
   provide: 'S3_CLIENT',
   useFactory: () => {
-    Logger.log('new S3!');
     return new S3({
       region: process.env.BUCKETEER_AWS_REGION,
       credentials: {
@@ -29,6 +28,6 @@ const s3ClientFactory = {
     PrismaService,
     s3ClientFactory,
   ],
-  exports: [AssetsRepository, AssetsService, AwsFileService],
+  exports: [AssetsRepository, AssetsService],
 })
 export class AssetsModule {}

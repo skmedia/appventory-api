@@ -6,10 +6,19 @@ import { cloneDeep } from 'lodash';
 import { hash } from 'bcrypt';
 
 async function main() {
+  console.log('seedAccounts');
   await seedAccounts();
+
+  console.log('seedClients');
   await seedClients();
+
+  console.log('seedUsers');
   await seedUsers();
+
+  console.log('seedTags');
   await seedTags();
+
+  console.log('seedApplications');
   await seedApplications();
 }
 

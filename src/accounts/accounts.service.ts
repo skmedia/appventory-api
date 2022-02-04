@@ -14,7 +14,7 @@ export class AccountsService {
       data: {
         id: data.id,
         name: data.name,
-        User: {
+        user: {
           create: {
             id: uuidv4(),
             email: data.email,

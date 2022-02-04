@@ -8,6 +8,7 @@ import {
   ApplicationTag,
   ApplicationTeamMember,
   Prisma,
+  PrismaClient,
 } from '@prisma/client';
 import AddApplicationDto from './dto/add-application.dto';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,7 +21,14 @@ export class ApplicationsService {
   constructor(
     private prisma: PrismaService,
     private assetsService: AssetsService,
-  ) {}
+  ) {
+    /*
+    prisma.$on<any>('query', (event: Prisma.QueryEvent) => {
+      console.log('Query: ' + event.query);
+      console.log('Duration: ' + event.duration + 'ms');
+    });
+    */
+  }
 
   async findById(id: string): Promise<Application | any | null> {
     return this.prisma.application.findUnique({
@@ -62,6 +70,15 @@ export class ApplicationsService {
     where = {
       accountId: account,
     };
+    if (dataTableOptions.hasTags()) {
+      where.tags = {
+        some: {
+          tagId: {
+            in: dataTableOptions.tags,
+          },
+        },
+      };
+    }
     if (dataTableOptions.term()) {
       where.OR = [
         {

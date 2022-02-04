@@ -22,6 +22,11 @@ export class DataTableOptionsDto {
   @Type(() => String)
   sortDesc?: Array<string>;
 
+  @IsOptional()
+  @IsArray()
+  @Type(() => String)
+  tags?: Array<string>;
+
   skip(): number {
     return (this.page - 1) * this.itemsPerPage;
   }
@@ -32,6 +37,10 @@ export class DataTableOptionsDto {
 
   term(): string {
     return this.search?.trim();
+  }
+
+  hasTags(): boolean {
+    return !!this.tags?.length;
   }
 }
 export default DataTableOptionsDto;

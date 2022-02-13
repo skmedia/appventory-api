@@ -2,11 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
+import { UserAccountsService } from 'src/user-accounts/user-accounts.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private userAccountsService: UserAccountsService,
     private jwtService: JwtService,
   ) {}
 
@@ -17,9 +19,9 @@ export class AuthService {
       return null;
     }
 
-    const checkPassword = await compare(pass, user.password);
+    const validPassword = await compare(pass, user.password);
 
-    if (checkPassword) {
+    if (validPassword) {
       const { password, ...result } = user;
       return result;
     }
@@ -27,27 +29,34 @@ export class AuthService {
     return null;
   }
 
-  async validateUserFromJwt(id: string): Promise<any> {
-    const user = await this.usersService.findById(id);
+  async validateUserFromJwt(id: string, accountId: string): Promise<any> {
+    const userAccount = await this.userAccountsService.findByUserIdAndAccountId(
+      id,
+      accountId,
+    );
 
-    if (!user) {
+    if (!userAccount) {
       return null;
     }
 
+    const user = userAccount.user;
+
     return {
       id: user.id,
-      accountId: user.accountId,
+      activeAccount: userAccount.account,
+      accounts: user.userAccounts.map(({ account }) => account),
       name: user.firstName + ' ' + user.lastName,
       initials: user.firstName.charAt(0) + user.lastName.charAt(0),
     };
   }
 
-  async login(user: any) {
+  async loginForAccount(user: any, accountId: string) {
     const payload = {
       username: user.email,
       sub: user.id,
-      account: user.accountId,
+      account: accountId,
     };
+
     return {
       access_token: this.jwtService.sign(payload),
     };

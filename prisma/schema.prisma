@@ -13,11 +13,11 @@ datasource db {
 model Account {
   id           String        @id @db.VarChar(255)
   name         String
-  user         User[]
   applications Application[]
   tagGroups    TagGroup[]
   apiClients   ApiClients[]
   clients      Client[]
+  userAccounts UserAccount[]
 
   @@map("accounts")
 }
@@ -30,15 +30,24 @@ model User {
   lastName  String @map("last_name")
   role      String
 
-  account   Account @relation(fields: [accountId], references: [id])
-  accountId String  @map("account_id") @db.VarChar(255)
-
   active    Boolean? @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  ApplicationTeamMember ApplicationTeamMember[]
+  applicationTeamMembers ApplicationTeamMember[]
+  userAccounts           UserAccount[]
   @@map("users")
+}
+
+model UserAccount {
+  id        String  @id @db.VarChar(255)
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @map("user_id")
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @map("account_id") @db.VarChar(255)
+
+  @@unique([userId, accountId])
+  @@map("user_accounts")
 }
 
 model Client {
@@ -139,7 +148,7 @@ model ApplicationTag {
 model ApplicationTeamMember {
   id            String       @id @db.VarChar(255)
   userFullName  String       @map("user_full_name") @db.VarChar(255)
-  User          User         @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
   userId        String       @map("user_id")
   tag           Tag?         @relation(fields: [tagId], references: [id])
   tagId         String?      @map("tag_id") @db.VarChar(255)
@@ -149,7 +158,6 @@ model ApplicationTeamMember {
   @@map("application_team_members")
 }
 
-// uploads: images, PDF files
 model ApplicationAsset {
   id            String       @id @db.VarChar(255)
   type          String       @db.VarChar(255)

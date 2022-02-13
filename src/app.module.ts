@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AccountsModule } from './accounts/accounts.module';
+import { UserAccountsModule } from './user-accounts/user-accounts.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AccountsModule } from './accounts/accounts.module';
     TagTypesModule,
     AuthModule,
     AccountsModule,
+    UserAccountsModule,
   ],
   controllers: [AppController],
   providers: [

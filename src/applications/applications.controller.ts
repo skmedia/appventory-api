@@ -23,6 +23,7 @@ import { CurrentAccount } from 'src/auth/auth.decorator';
 })
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
+
   @Get()
   async getList(
     @CurrentAccount() accountId,
@@ -44,6 +45,7 @@ export class ApplicationsController {
       },
     };
   }
+
   @Get('/:id')
   async getApplication(@Param('id') id: string, @CurrentAccount() accountId) {
     const application = await this.applicationsService.findById(id);
@@ -59,6 +61,7 @@ export class ApplicationsController {
 
     return application;
   }
+
   @Post()
   async addApplication(
     @Body() data: AddApplicationDto,
@@ -66,6 +69,7 @@ export class ApplicationsController {
   ): Promise<ApplicationModel> {
     return this.applicationsService.createApplication(data, accountId);
   }
+
   @Put('/:id')
   async updateApplication(
     @Param('id') id: string,
@@ -85,6 +89,7 @@ export class ApplicationsController {
 
     return this.applicationsService.updateApplication(application, data);
   }
+
   @Delete(':id')
   async deleteApplication(
     @Param('id') id: string,

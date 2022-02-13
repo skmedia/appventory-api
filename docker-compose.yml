@@ -1,41 +1,5 @@
 version: '3.7'
 services:
-    #influxdb:
-    #    image: 'influxdb:latest'
-    #    ports:
-    #        - '8087:8086'
-    rabbitmq_mgmt:
-        image: 'rabbitmq:management'
-        ports:
-            - '5678:5672'
-            - '15678:15672'
-    #elastic01:
-    #    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
-    #    container_name: elastic01
-    #    environment:
-    #        - discovery.type=single-node
-    #        - bootstrap.memory_lock=true
-    #        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    #    ulimits:
-    #        memlock:
-    #            soft: -1
-    #            hard: -1
-    #    volumes:
-    #        - elastic01:/usr/share/elasticsearch/data
-    #    ports:
-    #        - 9200:9200
-    #    networks:
-    #        - elastic
-    #kibana01:
-    #    image: docker.elastic.co/kibana/kibana:7.15.0
-    #    container_name: kibana01
-    #    ports:
-    #        - 5601:5601
-    #    environment:
-    #        ELASTICSEARCH_URL: http://elastic01:9200
-    #        ELASTICSEARCH_HOSTS: '["http://elastic01:9200"]'
-    #    networks:
-    #        - elastic
     database:
         image: 'mariadb:10.6.4'
         volumes:
@@ -51,10 +15,10 @@ services:
             - '3319:3306'
 volumes:
     mariadb-data:
-    #    driver: local
-    #elastic01:
-    #    driver: local
+        #    driver: local
+        #elastic01:
+        #    driver: local
 
-#networks:
-    #elastic:
-    #    driver: bridge
+        #networks:
+        #elastic:
+        #    driver: bridge

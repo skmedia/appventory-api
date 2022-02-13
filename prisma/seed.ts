@@ -80,7 +80,7 @@ async function seedUsers() {
   const users: any = [
     {
       id: uuidv4(),
-      accountId: accountRefs['account_1'].id,
+      accountId: [accountRefs['account_1'].id, accountRefs['account_2'].id],
       firstName: 'John',
       lastName: 'Doe',
       email: 'john.doe@example.com',
@@ -112,16 +112,58 @@ async function seedUsers() {
     },
   ];
 
+  const promises = [];
   for (const u of users) {
     const pass = await hash(u.email, 10);
     u.password = pass;
-  }
 
-  const promises = [];
-  users.forEach(async (u: any) => {
     userRefs[u.email] = u;
-    promises.push(prisma.user.create({ data: u }));
-  });
+
+    const accountId = u.accountId;
+    delete u.accountId;
+
+    const user = await prisma.user.create({
+      data: u,
+    });
+
+    if (Array.isArray(accountId)) {
+      accountId.forEach((accId) => {
+        const promise = prisma.userAccount.create({
+          data: {
+            id: uuidv4(),
+            user: {
+              connect: {
+                id: user.id,
+              },
+            },
+            account: {
+              connect: {
+                id: accId,
+              },
+            },
+          },
+        });
+        promises.push(promise);
+      });
+    } else {
+      const promise = prisma.userAccount.create({
+        data: {
+          id: uuidv4(),
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          account: {
+            connect: {
+              id: accountId,
+            },
+          },
+        },
+      });
+      promises.push(promise);
+    }
+  }
 
   return await Promise.all(promises);
 }

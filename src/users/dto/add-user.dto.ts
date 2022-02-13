@@ -14,7 +14,7 @@ export class AddUserDto {
 
   @IsNotEmpty({ message: 'email is required' })
   @IsEmail()
-  @Validate(UserIsUnique)
+  //@Validate(UserIsUnique)
   email: string;
 }
 

@@ -12,16 +12,26 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
   async forSelect(accountId: string): Promise<User[]> {
     return this.prisma.user.findMany({
+      include: {
+        userAccounts: true,
+      },
       where: {
-        accountId: accountId,
+        userAccounts: {
+          some: {
+            accountId: accountId,
+          },
+        },
       },
       orderBy: {
         firstName: 'asc',
       },
     });
   }
-  async findById(id: string): Promise<User> {
+  async findById(id: string): Promise<any> {
     return this.prisma.user.findUnique({
+      include: {
+        userAccounts: true,
+      },
       where: {
         id: id,
       },
@@ -30,6 +40,9 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User> {
     return this.prisma.user.findUnique({
+      include: {
+        userAccounts: true,
+      },
       where: {
         email: email,
       },
@@ -42,7 +55,11 @@ export class UsersService {
   ): Prisma.UserWhereInput {
     let where: Prisma.UserWhereInput = undefined;
     where = {
-      accountId: accountId,
+      userAccounts: {
+        some: {
+          accountId: accountId,
+        },
+      },
     };
     if (dataTableOptions.term()) {
       where.OR = [
@@ -88,13 +105,49 @@ export class UsersService {
   }
 
   async createUser(input: AddUserDto, accountId: string): Promise<User> {
-    const password = await hash(uuidv4(), 10);
+    // todo - setup password
+    const password = await hash(input.email, 10);
+    //const password = await hash(uuidv4(), 10);
+
+    const existingUserAccount = await this.prisma.userAccount.findFirst({
+      where: {
+        user: {
+          email: input.email,
+        },
+        accountId: {
+          not: accountId,
+        },
+      },
+    });
+
+    if (existingUserAccount) {
+      await this.prisma.userAccount.create({
+        data: {
+          id: uuidv4(),
+          user: {
+            connect: {
+              id: existingUserAccount.userId,
+            },
+          },
+          account: {
+            connect: {
+              id: accountId,
+            },
+          },
+        },
+      });
+
+      return this.prisma.user.findUnique({
+        where: { id: existingUserAccount.userId },
+      });
+    }
 
     const data: Prisma.UserCreateInput = {
       id: uuidv4(),
-      account: {
-        connect: {
-          id: accountId,
+      userAccounts: {
+        create: {
+          id: uuidv4(),
+          accountId: accountId,
         },
       },
       role: input.role,

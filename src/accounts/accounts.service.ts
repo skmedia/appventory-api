@@ -10,18 +10,24 @@ export class AccountsService {
   constructor(private prisma: PrismaService) {}
   async create(data: AddAccountDto) {
     const password = await hash(data.email, 10);
+
     return this.prisma.account.create({
       data: {
         id: data.id,
         name: data.name,
-        user: {
+        userAccounts: {
           create: {
             id: uuidv4(),
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            password: password,
-            role: Role.User,
+            user: {
+              create: {
+                id: uuidv4(),
+                email: data.email,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                password: password,
+                role: Role.User,
+              },
+            },
           },
         },
       },

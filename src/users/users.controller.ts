@@ -32,6 +32,7 @@ export class UsersController {
       items: items,
     };
   }
+
   @Get('list')
   async getList(
     @Query() dataTableOptions: DataTableOptionsDto,
@@ -46,10 +47,11 @@ export class UsersController {
       },
     };
   }
+
   @Get('/:id')
-  async getUser(@Param('id') id: string) {
+  async getUser(@Param('id') id: string, @CurrentAccount() accountId) {
     const user = await this.usersService.findById(id);
-    if (!user) {
+    if (!user || !this.userHasAccount(user, accountId)) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -61,13 +63,15 @@ export class UsersController {
 
     return user;
   }
-  @Post('')
+
+  @Post()
   async addUser(
     @Body() data: AddUserDto,
     @CurrentAccount() accountId,
   ): Promise<User> {
     return this.usersService.createUser(data, accountId);
   }
+
   @Put('/:id')
   async updateUser(
     @Param('id') id: string,
@@ -75,7 +79,7 @@ export class UsersController {
     @CurrentAccount() accountId,
   ): Promise<User> {
     const user = await this.usersService.findById(id);
-    if (!user || user.accountId !== accountId) {
+    if (!user || !this.userHasAccount(user, accountId)) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -87,13 +91,14 @@ export class UsersController {
 
     return this.usersService.updateUser(user, data);
   }
+
   @Delete(':id')
   async deleteUser(
     @Param('id') id: string,
     @CurrentAccount() accountId,
   ): Promise<User> {
     const user = await this.usersService.findById(id);
-    if (!user || user.accountId !== accountId) {
+    if (!user || !this.userHasAccount(user, accountId)) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -103,5 +108,11 @@ export class UsersController {
       );
     }
     return this.usersService.deleteUser({ id: user.id });
+  }
+
+  private userHasAccount(user: any, currentAccountId: string): boolean {
+    return user.userAccounts
+      .map(({ accountId }) => accountId)
+      .includes(currentAccountId);
   }
 }

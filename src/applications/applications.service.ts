@@ -22,12 +22,10 @@ export class ApplicationsService {
     private prisma: PrismaService,
     private assetsService: AssetsService,
   ) {
-    /*
     prisma.$on<any>('query', (event: Prisma.QueryEvent) => {
       console.log('Query: ' + event.query);
       console.log('Duration: ' + event.duration + 'ms');
     });
-    */
   }
 
   async findById(id: string): Promise<Application | any | null> {
@@ -71,13 +69,13 @@ export class ApplicationsService {
       accountId: account,
     };
     if (dataTableOptions.hasTags()) {
-      where.tags = {
-        some: {
-          tagId: {
-            in: dataTableOptions.tags,
-          },
-        },
-      };
+      const whereAnd = [];
+      dataTableOptions.tags.forEach((tagId) => {
+        whereAnd.push({
+          tags: { some: { tagId: tagId } },
+        });
+      });
+      where.AND = whereAnd;
     }
     if (dataTableOptions.term()) {
       where.OR = [

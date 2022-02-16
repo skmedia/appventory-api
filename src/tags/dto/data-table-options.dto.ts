@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
+import { DataTableOptionsDto as BaseDataTableOptionsDto } from '../../dto/data-table-options.dto';
 
 class TagFilterDto {
   @IsString()
@@ -18,34 +19,18 @@ class TagFilterDto {
   tagGroup: string;
 }
 
-export class DataTableOptionsDto {
-  @Type(() => Number)
-  page?: number = 1;
-
-  @Type(() => Number)
-  itemsPerPage?: number = 10;
-
+export class DataTableOptionsDto extends BaseDataTableOptionsDto {
   @Type(() => String)
   search?: string = '';
-
-  sortBy?: Array<string>;
-  sortDesc?: Array<string>;
 
   @IsOptional()
   @Type(() => TagFilterDto)
   @Transform(({ value }) => JSON.parse(value))
   filter: TagFilterDto;
 
-  skip(): number {
-    return (this.page - 1) * this.itemsPerPage;
-  }
-
-  take(): number {
-    return this.itemsPerPage;
-  }
-
   term(): string {
     return this.search?.trim();
   }
 }
+
 export default DataTableOptionsDto;

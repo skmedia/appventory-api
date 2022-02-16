@@ -1,25 +1,9 @@
 import { Type } from 'class-transformer';
+import { DataTableOptionsDto as BaseDataTableOptionsDto } from '../../dto/data-table-options.dto';
 
-export class DataTableOptionsDto {
-  @Type(() => Number)
-  page?: number = 1;
-
-  @Type(() => Number)
-  itemsPerPage?: number = 10;
-
+export class DataTableOptionsDto extends BaseDataTableOptionsDto {
   @Type(() => String)
   search?: string = '';
-
-  sortBy?: Array<string>;
-  sortDesc?: Array<string>;
-
-  skip(): number {
-    return (this.page - 1) * this.itemsPerPage;
-  }
-
-  take(): number {
-    return this.itemsPerPage;
-  }
 
   term(): string {
     return this.search?.trim();

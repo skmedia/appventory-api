@@ -136,15 +136,20 @@ export class ApplicationsService {
     const where = this.buildWhere(dataTableOptions, account);
     const orderBy = this.buildOrderBy(dataTableOptions);
 
-    return this.prisma.application.findMany({
+    let findManyArgs: Prisma.ApplicationFindManyArgs = {
       orderBy: orderBy,
-      skip: dataTableOptions.skip(),
-      take: dataTableOptions.take(),
       where: where,
       include: {
         client: true,
       },
-    });
+    };
+
+    if (dataTableOptions.needsPaging()) {
+      findManyArgs.skip = dataTableOptions.skip()
+      findManyArgs.take = dataTableOptions.take()
+    }
+
+    return this.prisma.application.findMany(findManyArgs)
   }
 
   async count(

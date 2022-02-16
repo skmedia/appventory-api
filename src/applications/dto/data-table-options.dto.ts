@@ -1,39 +1,15 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsIn, IsOptional } from 'class-validator';
+import { DataTableOptionsDto as BaseDataTableOptionsDto } from '../../dto/data-table-options.dto';
 
-export class DataTableOptionsDto {
-  @Type(() => Number)
-  page?: number = 1;
-
-  @Type(() => Number)
-  itemsPerPage?: number = 10;
-
+export class DataTableOptionsDto extends BaseDataTableOptionsDto {
   @Type(() => String)
   search?: string = '';
 
   @IsOptional()
   @IsArray()
   @Type(() => String)
-  //@IsIn(['name', 'client.name'], { message: 'invalid sort field' })
-  sortBy?: Array<string>;
-
-  @IsOptional()
-  @IsArray()
-  @Type(() => String)
-  sortDesc?: Array<string>;
-
-  @IsOptional()
-  @IsArray()
-  @Type(() => String)
   tags?: Array<string>;
-
-  skip(): number {
-    return (this.page - 1) * this.itemsPerPage;
-  }
-
-  take(): number {
-    return this.itemsPerPage;
-  }
 
   term(): string {
     return this.search?.trim();
@@ -43,4 +19,5 @@ export class DataTableOptionsDto {
     return !!this.tags?.length;
   }
 }
+
 export default DataTableOptionsDto;

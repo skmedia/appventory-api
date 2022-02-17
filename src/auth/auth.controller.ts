@@ -6,6 +6,8 @@ import {
   UseGuards,
   Logger,
   UnauthorizedException,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -13,6 +15,7 @@ import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { UsersService } from 'src/users/users.service';
 import { UserAccountsService } from 'src/user-accounts/user-accounts.service';
+import { Response } from 'express';
 
 @Controller()
 export class AuthController {
@@ -57,8 +60,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('auth/user')
-  getProfile(@Request() req) {
-    return { user: req.user };
+  getProfile(@Request() req, @Res() res: Response) {
+    res.status(HttpStatus.OK).json({ user: req.user });
   }
 
   @UseGuards(JwtAuthGuard)

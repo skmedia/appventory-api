@@ -1,24 +1,46 @@
 version: '3.7'
 services:
+    # elastic01:
+    #     image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    #     container_name: elastic01
+    #     environment:
+    #         - discovery.type=single-node
+    #         - bootstrap.memory_lock=true
+    #         - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    #     ulimits:
+    #         memlock:
+    #             soft: -1
+    #             hard: -1
+    #     volumes:
+    #         - elastic01:/usr/share/elasticsearch/data
+    #     ports:
+    #         - 9200:9200
+    #     networks:
+    #         - elastic
+    # kibana01:
+    #     image: docker.elastic.co/kibana/kibana:7.15.0
+    #     container_name: kibana01
+    #     ports:
+    #         - 5601:5601
+    #     environment:
+    #         ELASTICSEARCH_URL: http://elastic01:9200
+    #         ELASTICSEARCH_HOSTS: '["http://elastic01:9200"]'
+    #     networks:
+    #         - elastic
     database:
         image: 'mariadb:10.6.4'
         volumes:
-            - mariadb-data:/var/lib/mariadb-appvento
+            - ${PWD}/docker-volumes/mariadb:/var/lib/mysql
         environment:
             MYSQL_ROOT_PASSWORD: root
             MYSQL_DATABASE: appvento
         ports:
-            # To allow the host machine to access the ports below, modify the lines below.
-            # For example, to allow the host to connect to port 3306 on the container, you would change
-            # "3306" to "3306:3306". Where the first port is exposed to the host and the second is the container port.
-            # See https://docs.docker.com/compose/compose-file/#ports for more information.
             - '3319:3306'
+
 volumes:
     mariadb-data:
-        #    driver: local
         #elastic01:
-        #    driver: local
 
         #networks:
-        #elastic:
-        #    driver: bridge
+        #    elastic:
+        #        driver: bridge

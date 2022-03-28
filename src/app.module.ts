@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ApplicationsModule } from './applications/applications.module';
+import { ApplicationTeamMembersModule } from './application-team-members/application-team-members.module';
 import { ConfigModule } from '@nestjs/config';
 import { TagsModule } from './tags/tags.module';
 import { ClientsModule } from './clients/clients.module';
@@ -18,6 +19,7 @@ import { UserAccountsModule } from './user-accounts/user-accounts.module';
   imports: [
     ConfigModule.forRoot(),
     ApplicationsModule,
+    ApplicationTeamMembersModule,
     TagsModule,
     ClientsModule,
     UsersModule,

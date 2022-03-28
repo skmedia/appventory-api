@@ -136,7 +136,7 @@ export class ApplicationsService {
     const where = this.buildWhere(dataTableOptions, account);
     const orderBy = this.buildOrderBy(dataTableOptions);
 
-    let findManyArgs: Prisma.ApplicationFindManyArgs = {
+    const findManyArgs: Prisma.ApplicationFindManyArgs = {
       orderBy: orderBy,
       where: where,
       include: {
@@ -145,11 +145,11 @@ export class ApplicationsService {
     };
 
     if (dataTableOptions.needsPaging()) {
-      findManyArgs.skip = dataTableOptions.skip()
-      findManyArgs.take = dataTableOptions.take()
+      findManyArgs.skip = dataTableOptions.skip();
+      findManyArgs.take = dataTableOptions.take();
     }
 
-    return this.prisma.application.findMany(findManyArgs)
+    return this.prisma.application.findMany(findManyArgs);
   }
 
   async count(
@@ -162,6 +162,33 @@ export class ApplicationsService {
         where: where,
       })
       .then((result) => result.length);
+  }
+
+  async addApplication(
+    data: AddApplicationDto,
+    account: string,
+  ): Promise<Application> {
+    const application: Prisma.ApplicationCreateInput = {
+      id: uuidv4(),
+      account: {
+        connect: {
+          id: account,
+        },
+      },
+      client: {
+        connect: {
+          id: data.client.id,
+        },
+      },
+      name: data.name,
+      description: data.description,
+    };
+    const app = this.prisma.application.create({
+      data: {
+        ...application,
+      },
+    });
+    return app;
   }
 
   async createApplication(

@@ -67,7 +67,7 @@ export class ApplicationsController {
     @Body() data: AddApplicationDto,
     @CurrentAccount() accountId,
   ): Promise<ApplicationModel> {
-    return this.applicationsService.createApplication(data, accountId);
+    return this.applicationsService.addApplication(data, accountId);
   }
 
   @Put('/:id')

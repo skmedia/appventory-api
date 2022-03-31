@@ -122,10 +122,8 @@ export class TagsService {
   ): Promise<any[]> {
     const where = this.buildWhere(dataTableOptions, accountId);
 
-    return this.prisma.tag.findMany({
+    const findManyArgs: Prisma.TagFindManyArgs = {
       orderBy: { label: 'asc' },
-      skip: dataTableOptions.skip(),
-      take: dataTableOptions.take(),
       include: {
         tagType: true,
         applicationLinks: true,
@@ -133,7 +131,14 @@ export class TagsService {
         applicationTags: true,
       },
       where: where,
-    });
+    };
+
+    if (dataTableOptions.needsPaging()) {
+      findManyArgs.skip = dataTableOptions.skip();
+      findManyArgs.take = dataTableOptions.take();
+    }
+
+    return this.prisma.tag.findMany(findManyArgs);
   }
 
   async createTag(addTagDto: AddTagDto) {
@@ -172,6 +177,11 @@ export class TagsService {
         },
       }),
       this.prisma.applicationTeamMember.findMany({
+        where: {
+          tagId: id,
+        },
+      }),
+      this.prisma.applicationNote.findMany({
         where: {
           tagId: id,
         },

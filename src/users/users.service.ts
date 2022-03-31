@@ -84,12 +84,17 @@ export class UsersService {
   ): Promise<any[]> {
     const where = this.buildWhere(dataTableOptions, accountId);
 
-    return this.prisma.user.findMany({
+    const findManyArgs: Prisma.UserFindManyArgs = {
       orderBy: { firstName: 'asc' },
-      skip: dataTableOptions.skip(),
-      take: dataTableOptions.take(),
       where: where,
-    });
+    };
+
+    if (dataTableOptions.needsPaging()) {
+      findManyArgs.skip = dataTableOptions.skip();
+      findManyArgs.take = dataTableOptions.take();
+    }
+
+    return this.prisma.user.findMany(findManyArgs);
   }
 
   async count(

@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ApplicationsModule } from './applications/applications.module';
 import { ApplicationTeamMembersModule } from './application-team-members/application-team-members.module';
+import { ApplicationLinksModule } from './application-links/application-links.module';
+import { ApplicationNotesModule } from './application-notes/application-notes.module';
+import { ApplicationAssetsModule } from './application-assets/application-assets.module';
 import { ConfigModule } from '@nestjs/config';
 import { TagsModule } from './tags/tags.module';
 import { ClientsModule } from './clients/clients.module';
@@ -20,6 +23,9 @@ import { UserAccountsModule } from './user-accounts/user-accounts.module';
     ConfigModule.forRoot(),
     ApplicationsModule,
     ApplicationTeamMembersModule,
+    ApplicationLinksModule,
+    ApplicationNotesModule,
+    ApplicationAssetsModule,
     TagsModule,
     ClientsModule,
     UsersModule,

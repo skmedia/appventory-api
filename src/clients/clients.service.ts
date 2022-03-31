@@ -55,15 +55,20 @@ export class ClientsService {
   ): Promise<any[]> {
     const where = this.buildWhere(dataTableOptions, accountId);
 
-    return this.prisma.client.findMany({
+    const findManyArgs: Prisma.ClientFindManyArgs = {
       orderBy: { name: 'asc' },
-      skip: dataTableOptions.skip(),
-      take: dataTableOptions.take(),
       where: where,
       include: {
         applications: true,
       },
-    });
+    };
+
+    if (dataTableOptions.needsPaging()) {
+      findManyArgs.skip = dataTableOptions.skip();
+      findManyArgs.take = dataTableOptions.take();
+    }
+
+    return this.prisma.client.findMany(findManyArgs);
   }
 
   async count(

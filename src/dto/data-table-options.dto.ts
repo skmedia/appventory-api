@@ -19,14 +19,20 @@ export class DataTableOptionsDto {
   sortDesc?: Array<string>;
 
   needsPaging(): boolean {
-    return this.itemsPerPage > 0
+    return this.itemsPerPage > 0;
   }
 
   skip(): number {
+    if (this.itemsPerPage < 0) {
+      return 0;
+    }
     return (this.page - 1) * this.itemsPerPage;
   }
 
   take(): number {
+    if (this.itemsPerPage < 0) {
+      return 1000;
+    }
     return this.itemsPerPage;
   }
 }

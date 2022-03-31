@@ -191,110 +191,9 @@ export class ApplicationsService {
     return app;
   }
 
-  async createApplication(
-    data: AddApplicationDto,
-    account: string,
-  ): Promise<Application> {
-    const application: Prisma.ApplicationCreateInput = {
-      id: uuidv4(),
-      account: {
-        connect: {
-          id: account,
-        },
-      },
-      client: {
-        connect: {
-          id: data.client.id,
-        },
-      },
-      name: data.name,
-      description: data.description,
-    };
-    const newTags = data.tags.map((t) => {
-      return {
-        id: uuidv4(),
-        tagId: t.id,
-        label: t.label,
-      };
-    });
-    const newLinks = data.links.map((t) => {
-      return {
-        id: uuidv4(),
-        type: t.tag.id,
-        tagId: t.tag.id,
-        url: t.url,
-      };
-    });
-    const newNotes = data.notes.map((t) => {
-      return {
-        id: uuidv4(),
-        type: t.tag.id,
-        tagId: t.tag.id,
-        text: t.text,
-      };
-    });
-    const newTeamMembers = data.teamMembers.map((t) => {
-      return {
-        id: uuidv4(),
-        userId: t.userId,
-        tagId: t.tag.id,
-        userFullName: t.userFullName,
-      };
-    });
-    const newAssets = data.filesToAdd.map((a) => {
-      return {
-        id: uuidv4(),
-        type: a.type,
-        filename: a.filename,
-        key: a.key,
-        location: a.location,
-        description: a.description,
-      };
-    });
-    try {
-      const app = this.prisma.application.create({
-        data: {
-          ...application,
-          assets: {
-            createMany: {
-              data: newAssets,
-            },
-          },
-          tags: {
-            createMany: {
-              data: newTags,
-            },
-          },
-          links: {
-            createMany: {
-              data: newLinks,
-            },
-          },
-          notes: {
-            createMany: {
-              data: newNotes,
-            },
-          },
-          teamMembers: {
-            createMany: {
-              data: newTeamMembers,
-            },
-          },
-        },
-      });
-      return app;
-    } catch (e) {
-      this.assetsService.deleteFiles(newAssets);
-    }
-  }
-
   async updateApplication(
     application: Application & {
       tags: Array<ApplicationTag>;
-      links: Array<ApplicationLink>;
-      notes: Array<ApplicationNote>;
-      teamMembers: Array<ApplicationTeamMember>;
-      assets: Array<ApplicationAsset>;
     },
     input: UpdateApplicationDto,
   ): Promise<Application> {
@@ -322,169 +221,36 @@ export class ApplicationsService {
         };
       });
 
-    const deleteExistingLinks = application.links.map((t) => {
-      return {
-        tagId: t.tagId,
-      };
-    });
-    const newLinks = input.links.map((t) => {
-      return {
-        id: uuidv4(),
-        type: t.tag.id,
-        tagId: t.tag.id,
-        url: t.url,
-      };
-    });
-
-    const notesToDelete = application.notes
-      .filter((note) => {
-        const found = input.notes.find(({ id }) => id === note.id);
-        if (found && found?.isNew) {
-          return false;
-        }
-        return !!found === false; // existing note is no longer in input notes, so remove it
-      })
-      .map((note) => {
-        return {
-          id: note.id,
-        };
-      });
-
-    const notesToAdd = input.notes
-      .filter((note) => {
-        return note?.isNew;
-      })
-      .map((note) => {
-        return {
-          id: note.id,
-          tagId: note.tag.id,
-          text: note.text,
-        };
-      });
-
-    const notesToUpdate = input.notes
-      .filter((note) => {
-        const found = application.notes.find(({ id }) => id === note.id);
-        return !!found === true;
-      })
-      .map((note) => {
-        return {
-          where: {
-            id: note.id,
-          },
-          data: {
-            tagId: note.tag.id,
-            text: note.text,
-          },
-        };
-      });
-
-    const deleteExistingTeamMembers = application.teamMembers.map((t) => {
-      return {
-        tagId: t.tagId,
-      };
-    });
-    const newTeamMembers = input.teamMembers.map((t) => {
-      return {
-        id: uuidv4(),
-        userId: t.userId,
-        tagId: t.tag.id,
-        userFullName: t.userFullName,
-      };
-    });
-
-    const filesToDelete = application.assets.filter((asset) => {
-      const found = input.assets.find(({ id }) => id === asset.id);
-      return !!found === false; // existing asset is no longer in input assets, so remove it
-    });
-
-    const newAssets = input.filesToAdd.map((a) => {
-      return {
-        id: uuidv4(),
-        type: a.type,
-        key: a.key,
-        location: a.location,
-        filename: a.filename,
-        description: a.description,
-      };
-    });
-
     const where = {
       id: application.id,
     };
 
-    const data = {
-      name: input.name,
-      client: {
-        connect: {
-          id: input.client.id,
+    const updateArgs: Prisma.ApplicationUpdateArgs = {
+      data: {
+        name: input.name,
+        client: {
+          connect: {
+            id: input.client.id,
+          },
+        },
+        description: input.description,
+        tags: {
+          deleteMany: tagsToDelete,
+          createMany: {
+            data: tagsToAdd,
+            skipDuplicates: true,
+          },
         },
       },
-      description: input.description,
-      assets: {
-        deleteMany: filesToDelete.map((file) => {
-          return { id: file.id };
-        }),
-        updateMany: input.assets.map((file) => {
-          return {
-            where: {
-              id: file.id,
-            },
-            data: {
-              description: file.description,
-            },
-          };
-        }),
-        createMany: {
-          data: newAssets,
-          skipDuplicates: true,
-        },
-      },
-      notes: {
-        deleteMany: notesToDelete,
-        updateMany: notesToUpdate,
-        createMany: {
-          data: notesToAdd,
-          skipDuplicates: true,
-        },
-      },
-      teamMembers: {
-        deleteMany: deleteExistingTeamMembers,
-        createMany: {
-          data: newTeamMembers,
-          skipDuplicates: true,
-        },
-      },
-      tags: {
-        deleteMany: tagsToDelete,
-        createMany: {
-          data: tagsToAdd,
-          skipDuplicates: true,
-        },
-      },
-      links: {
-        deleteMany: deleteExistingLinks,
-        createMany: {
-          data: newLinks,
-          skipDuplicates: true,
-        },
-      },
+      where: where,
     };
 
     try {
-      const application = await this.prisma.application.update({
-        data,
-        where,
-      });
-
-      if (filesToDelete.length) {
-        this.assetsService.deleteFiles(filesToDelete);
-      }
+      const application = await this.prisma.application.update(updateArgs);
 
       return application;
     } catch (e) {
       Logger.error('could not update application', e);
-      this.assetsService.deleteFiles(input.filesToAdd);
       throw e;
     }
   }

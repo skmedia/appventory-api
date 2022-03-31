@@ -1,12 +1,10 @@
 import { Type } from 'class-transformer';
 import {
-  IsArray,
   IsNotEmpty,
   IsOptional,
   MaxLength,
   ValidateNested,
 } from 'class-validator';
-import NoteDto from './note.dto';
 
 class TagInput {
   @IsNotEmpty({ message: 'tagId is required' })
@@ -33,26 +31,6 @@ export class UpdateApplicationDto {
   @ValidateNested()
   @Type(() => TagInput)
   tags: TagInput[];
-
-  @IsOptional()
-  links: Array<any>;
-
-  @IsOptional()
-  teamMembers: Array<any>;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => NoteDto)
-  notes: NoteDto[];
-
-  @IsOptional()
-  fileDescriptions: Array<string>;
-
-  @IsOptional()
-  assets: Array<any>;
-
-  @IsOptional()
-  filesToAdd: Array<any>;
 }
 
 export default UpdateApplicationDto;

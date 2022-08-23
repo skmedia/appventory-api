@@ -1,15 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from './../prisma.service';
-import {
-  Application,
-  ApplicationAsset,
-  ApplicationLink,
-  ApplicationNote,
-  ApplicationTag,
-  ApplicationTeamMember,
-  Prisma,
-  PrismaClient,
-} from '@prisma/client';
+import { Application, ApplicationTag, Prisma } from '@prisma/client';
 import AddApplicationDto from './dto/add-application.dto';
 import { v4 as uuidv4 } from 'uuid';
 import UpdateApplicationDto from './dto/update-application.dto';
@@ -68,14 +59,21 @@ export class ApplicationsService {
     where = {
       accountId: account,
     };
+    if (dataTableOptions.activeOnly) {
+      where.active = true;
+    }
     if (dataTableOptions.hasTags()) {
-      const whereAnd = [];
+      const whereTags = [];
       dataTableOptions.tags.forEach((tagId) => {
-        whereAnd.push({
+        whereTags.push({
           tags: { some: { tagId: tagId } },
         });
       });
-      where.AND = whereAnd;
+      if (dataTableOptions.allTags) {
+        where.AND = whereTags;
+      } else {
+        where.OR = whereTags;
+      }
     }
     if (dataTableOptions.term()) {
       where.OR = [
@@ -101,19 +99,17 @@ export class ApplicationsService {
   ): Array<Prisma.ApplicationOrderByWithRelationInput> {
     let orderBy: Array<Prisma.ApplicationOrderByWithRelationInput> = [];
 
-    const sortDir = (value: string) => (value === 'true' ? 'desc' : 'asc');
-
     if (dataTableOptions?.sortBy) {
       for (let i = 0; i < dataTableOptions.sortBy.length; i++) {
         if (dataTableOptions.sortBy[i] === 'name') {
           orderBy.push({
-            [dataTableOptions.sortBy[i]]: sortDir(dataTableOptions.sortDesc[i]),
+            [dataTableOptions.sortBy[i]]: dataTableOptions.sortDesc[i],
           });
         }
         if (dataTableOptions.sortBy[i] === 'client.name') {
           orderBy.push({
             client: {
-              name: sortDir(dataTableOptions.sortDesc[i]),
+              name: dataTableOptions.sortDesc[i],
             },
           });
         }
@@ -141,6 +137,7 @@ export class ApplicationsService {
       where: where,
       include: {
         client: true,
+        tags: { select: { label: true } },
       },
     };
 
@@ -228,6 +225,7 @@ export class ApplicationsService {
     const updateArgs: Prisma.ApplicationUpdateArgs = {
       data: {
         name: input.name,
+        active: input.active,
         client: {
           connect: {
             id: input.client.id,

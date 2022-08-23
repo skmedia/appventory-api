@@ -70,7 +70,7 @@ export class ApplicationsController {
     return this.applicationsService.addApplication(data, accountId);
   }
 
-  @Put('/:id')
+  @Put(':id')
   async updateApplication(
     @Param('id') id: string,
     @Body() data: UpdateApplicationDto,

@@ -77,9 +77,10 @@ model ApiClients {
 }
 
 model Application {
-  id          String  @id @db.VarChar(255)
+  id          String   @id @db.VarChar(255)
   name        String
-  description String? @db.LongText
+  description String?  @db.LongText
+  active      Boolean? @default(true) @db.TinyInt
 
   client   Client @relation(fields: [clientId], references: [id])
   clientId String @map("client_id") @db.VarChar(255)

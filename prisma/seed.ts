@@ -290,8 +290,27 @@ async function seedTags() {
           {
             label: 'Analyst',
           },
+        ],
+      },
+    },
+    {
+      label: 'Client',
+      tags: {
+        create: [
           {
-            label: 'Client Contact',
+            label: 'Development Lead',
+          },
+          {
+            label: 'Project Manager',
+          },
+          {
+            label: 'Solution Architect',
+          },
+          {
+            label: 'Analyst',
+          },
+          {
+            label: 'Business user',
           },
         ],
       },

@@ -39,18 +39,15 @@ export class TagsController {
   }
   @Get('for-select/:tagGroupId')
   async forSelect(
-    @CurrentAccount() accountId,
+    @CurrentAccount() accountId: string,
     @Param('tagGroupId') tagGroupCode?: string,
   ) {
-    const items = await this.tagsService.forSelect(accountId, tagGroupCode);
-    return {
-      items: items,
-    };
+    return { items: await this.tagsService.forSelect(accountId, tagGroupCode) };
   }
   @Get()
   async getList(
     @Query() dataTableOptions: DataTableOptionsDto,
-    @CurrentAccount() accountId,
+    @CurrentAccount() accountId: string,
   ) {
     const count = await this.tagsService.count(dataTableOptions, accountId);
     const items = await this.tagsService.getList(dataTableOptions, accountId);
@@ -70,8 +67,7 @@ export class TagsController {
   }
   @Post()
   async addTag(@Body() addTagDto: AddTagDto, @CurrentAccount() accountId) {
-    // todo check accountId!
-    return await this.tagsService.createTag(addTagDto);
+    return await this.tagsService.createTag(addTagDto, accountId);
   }
   @Put(':id')
   async updateTag(
@@ -79,9 +75,8 @@ export class TagsController {
     @Param('id') id: string,
     @CurrentAccount() accountId,
   ) {
-    // todo check accountId!
     const tag = await this.tagsService.findById(id);
-    if (!tag) {
+    if (!tag || tag.tagType.tagGroup.accountId !== accountId) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

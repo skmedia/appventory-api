@@ -17,9 +17,32 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { AccountsModule } from './accounts/accounts.module';
 import { UserAccountsModule } from './user-accounts/user-accounts.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.MAIL_HOST,
+        port: parseInt(process.env.MAIL_PORT),
+        secure: false, // upgrade later with STARTTLS
+        auth: {
+          user: 'username',
+          pass: 'password',
+        },
+      },
+      defaults: {
+        from: 'appvento',
+      },
+      template: {
+        dir: process.cwd() + '/templates/mail/',
+        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+        options: {
+          strict: true,
+        },
+      },
+    }),
     ConfigModule.forRoot(),
     ApplicationsModule,
     ApplicationTeamMembersModule,

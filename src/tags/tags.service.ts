@@ -5,6 +5,14 @@ import AddTagDto from './dto/add-tag.dto';
 import DataTableOptionsDto from './dto/data-table-options.dto';
 import UpdateTagDto from './dto/update-tag-dto';
 import slugify from 'slugify';
+import TagItemForSelectDto from './dto/tag-item-for-select.dto';
+
+type TagWithTagTypes = Prisma.TagGetPayload<{
+  include: {
+    tagType: true;
+  };
+}>;
+type TagsWithTagTypes = TagWithTagTypes[];
 
 @Injectable()
 export class TagsService {
@@ -27,26 +35,33 @@ export class TagsService {
     });
   }
 
-  async forSelect(accountId: string, tagGroupCode?: string): Promise<Tag[]> {
+  async forSelect(
+    accountId: string,
+    tagGroupCode?: string,
+  ): Promise<TagItemForSelectDto[]> {
     const tagGroup: any = {
       accountId: accountId,
     };
     if (tagGroupCode) {
       tagGroup.code = tagGroupCode;
     }
-    return this.prisma.tag.findMany({
-      orderBy: {
-        label: 'asc',
-      },
-      where: {
-        tagType: {
-          tagGroup: tagGroup,
+    return this.prisma.tag
+      .findMany({
+        orderBy: {
+          label: 'asc',
         },
-      },
-      include: {
-        tagType: true,
-      },
-    });
+        where: {
+          tagType: {
+            tagGroup: tagGroup,
+          },
+        },
+        include: {
+          tagType: true,
+        },
+      })
+      .then((tags: TagsWithTagTypes) => {
+        return tags.map((i) => TagItemForSelectDto.fromTag(i));
+      });
   }
 
   private buildWhere(
@@ -141,13 +156,20 @@ export class TagsService {
     return this.prisma.tag.findMany(findManyArgs);
   }
 
-  async createTag(addTagDto: AddTagDto) {
+  async createTag(addTagDto: AddTagDto, accountId: string) {
+    const tagType = await this.prisma.tagType.findFirst({
+      where: {
+        id: addTagDto.tagType.value,
+        tagGroup: { accountId: accountId },
+      },
+    });
+
     return this.prisma.tag.create({
       data: {
         id: addTagDto.id,
         code: slugify(addTagDto.label, { lower: true }),
         label: addTagDto.label,
-        tagTypeId: addTagDto.tagType.value,
+        tagTypeId: tagType.id,
       },
     });
   }

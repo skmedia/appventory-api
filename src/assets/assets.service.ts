@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApplicationAsset } from '@prisma/client';
 import { AssetsRepository } from './assets.repository';
 import { AwsFileService } from './aws-file.service';

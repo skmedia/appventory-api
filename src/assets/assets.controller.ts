@@ -8,6 +8,8 @@ import {
   UseInterceptors,
   StreamableFile,
   Res,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -27,9 +29,23 @@ export class AssetsController {
     @Body('fileDescriptions') fileDescriptions: Array<any>,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const result = await this.assetsService.upload(id, files, fileDescriptions);
+    try {
+      const result = await this.assetsService.upload(
+        id,
+        files,
+        fileDescriptions,
+      );
 
-    return result;
+      return result;
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: e,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Get('download/:id')
   async download(

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -15,6 +15,8 @@ class TagInput {
 }
 
 export class UpdateApplicationDto {
+  active: boolean;
+
   @IsNotEmpty({ message: 'name is required' })
   name: string;
 

@@ -1,5 +1,10 @@
-import { Type } from 'class-transformer';
+import { Prisma } from '@prisma/client';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsIn, IsOptional } from 'class-validator';
+
+interface Foo {
+  [key: number]: boolean;
+}
 
 export class DataTableOptionsDto {
   @Type(() => Number)
@@ -13,10 +18,21 @@ export class DataTableOptionsDto {
   @Type(() => String)
   sortBy?: Array<string>;
 
+  @Transform(({ value }) => {
+    return [true, 'enabled', 'true'].indexOf(value) > -1;
+  })
+  mustSort?: boolean;
+
   @IsOptional()
   @IsArray()
   @Type(() => String)
-  sortDesc?: Array<string>;
+  @Transform(({ value }) => {
+    return value.map(
+      (v: string): Prisma.SortOrder =>
+        [true, 'enabled', 'true'].indexOf(v) > -1 ? 'desc' : 'asc',
+    );
+  })
+  sortDesc?: Array<Prisma.SortOrder>;
 
   needsPaging(): boolean {
     return this.itemsPerPage > 0;

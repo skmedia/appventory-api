@@ -1,4 +1,4 @@
-# AppVentory API - backend for AppVento.
+# AppVentory API - backend for AppVentory.
 
 AppVentory is a tool to manage applications.
 
